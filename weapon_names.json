@@ -1,0 +1,791 @@
+{
+    "20848859": {
+        "EN": "Blackcliff Slasher"
+    },
+    "21074019": {
+        "EN": "Etherlight Spindlelute"
+    },
+    "2250670211": {
+        "EN": "Golden Frostbound Oath"
+    },
+    "37147251": {
+        "EN": "Solar Pearl"
+    },
+    "123009691": {
+        "EN": "UNKNOWN"
+    },
+    "143051931": {
+        "EN": "Xiphos' Moonlight"
+    },
+    "160493219": {
+        "EN": "Dark Iron Sword"
+    },
+    "197755235": {
+        "EN": "Vortex Vanquisher"
+    },
+    "231836963": {
+        "EN": "Primordial Jade Cutter"
+    },
+    "275622963": {
+        "EN": "Light of Foliar Incision"
+    },
+    "302691299": {
+        "EN": "Amber Bead"
+    },
+    "310247243": {
+        "EN": "Kagura's Verity"
+    },
+    "313300315": {
+        "EN": "Sapwood Blade"
+    },
+    "316078811": {
+        "EN": "Ibis Piercer"
+    },
+    "342097547": {
+        "EN": "Cinnabar Spindle"
+    },
+    "346510395": {
+        "EN": "Luxurious Sea-Lord"
+    },
+    "357888539": {
+        "EN": "Moonweaver's Dawn"
+    },
+    "359484419": {
+        "EN": "Tulaytullah's Remembrance"
+    },
+    "411685275": {
+        "EN": "Compound Bow"
+    },
+    "415520051": {
+        "EN": "Footprint of the Rainbow"
+    },
+    "415851979": {
+        "EN": "UNKNOWN"
+    },
+    "422144187": {
+        "EN": "Ash-Graven Drinking Horn"
+    },
+    "426363739": {
+        "EN": "Wandering Evenstar"
+    },
+    "449192923": {
+        "EN": "Ballad of the Fjords"
+    },
+    "452043283": {
+        "EN": "Lost Ballade"
+    },
+    "452357939": {
+        "EN": "Moonpiercer"
+    },
+    "454086795": {
+        "EN": "Key of Khaj-Nisut"
+    },
+    "469555475": {
+        "EN": "UNKNOWN"
+    },
+    "479076483": {
+        "EN": "Cool Steel"
+    },
+    "481755219": {
+        "EN": "Blackcliff Pole"
+    },
+    "486513155": {
+        "EN": "Tamayuratei no Ohanashi"
+    },
+    "495182275": {
+        "EN": "Sturdy Bone"
+    },
+    "500612819": {
+        "EN": "The Flagstaff"
+    },
+    "500987603": {
+        "EN": "UNKNOWN"
+    },
+    "518077587": {
+        "EN": "Symphonist of Scents"
+    },
+    "540938627": {
+        "EN": "Predator"
+    },
+    "565052971": {
+        "EN": "Chain Breaker"
+    },
+    "565329475": {
+        "EN": "Kunwu's Wyrmbane"
+    },
+    "578575283": {
+        "EN": "Crescent Pike"
+    },
+    "590019915": {
+        "EN": "Calamity of Eshu"
+    },
+    "594850707": {
+        "EN": "Sword of Narzissenkreuz"
+    },
+    "618786571": {
+        "EN": "Halberd"
+    },
+    "623534363": {
+        "EN": "Favonius Codex"
+    },
+    "650049651": {
+        "EN": "Windblume Ode"
+    },
+    "656120259": {
+        "EN": "Sharpshooter's Oath"
+    },
+    "658627627": {
+        "EN": "Blackmarrow Lantern"
+    },
+    "680510411": {
+        "EN": "Whiteblind"
+    },
+    "688237043": {
+        "EN": "Fruitful Hook"
+    },
+    "688991243": {
+        "EN": "Calamity Queller"
+    },
+    "693354267": {
+        "EN": "Memory of Dust"
+    },
+    "716252627": {
+        "EN": "Lithic Spear"
+    },
+    "724881171": {
+        "EN": "Cashflow Supervision"
+    },
+    "735056795": {
+        "EN": "Favonius Greatsword"
+    },
+    "759708203": {
+        "EN": "UNKNOWN"
+    },
+    "800766043": {
+        "EN": "Finale of the Deep"
+    },
+    "807607555": {
+        "EN": "Skyward Atlas"
+    },
+    "828711395": {
+        "EN": "Amos' Bow"
+    },
+    "850802171": {
+        "EN": "White Iron Greatsword"
+    },
+    "877751435": {
+        "EN": "Royal Greatsword"
+    },
+    "882305891": {
+        "EN": "Prospector's Drill"
+    },
+    "902184579": {
+        "EN": "Forest Regalia"
+    },
+    "902264035": {
+        "EN": "Aquila Favonia"
+    },
+    "930640955": {
+        "EN": "The Bell"
+    },
+    "933442195": {
+        "EN": "\"Ultimate Overlord's Mega Magic Sword\""
+    },
+    "944332883": {
+        "EN": "Summit Shaper"
+    },
+    "977648923": {
+        "EN": "Primordial Jade Greatsword"
+    },
+    "980370707": {
+        "EN": "Sacrificer's Staff"
+    },
+    "1009471939": {
+        "EN": "Absolution"
+    },
+    "1012170803": {
+        "EN": "Kagotsurube Isshin"
+    },
+    "1021898539": {
+        "EN": "Slingshot"
+    },
+    "1055195035": {
+        "EN": "Range Gauge"
+    },
+    "1072884907": {
+        "EN": "Mappa Mare"
+    },
+    "1075647299": {
+        "EN": "Song of Broken Pines"
+    },
+    "1089950259": {
+        "EN": "Skyward Pride"
+    },
+    "1135130229": {
+        "EN": "UNKNOWN"
+    },
+    "1148024603": {
+        "EN": "\"The Catch\""
+    },
+    "1154009435": {
+        "EN": "Prototype Starglitter"
+    },
+    "1163263227": {
+        "EN": "The Widsith"
+    },
+    "1182966603": {
+        "EN": "Old Merc's Pal"
+    },
+    "1183454019": {
+        "EN": "Fang of the Mountain King"
+    },
+    "1198975171": {
+        "EN": "Nightweaver's Looking Glass"
+    },
+    "1200948859": {
+        "EN": "Mailed Flower"
+    },
+    "1201790667": {
+        "EN": "A Thousand Floating Dreams"
+    },
+    "1235521427": {
+        "EN": "The Daybreak Chronicles"
+    },
+    "1240067179": {
+        "EN": "Favonius Warbow"
+    },
+    "1257396043": {
+        "EN": "Silvershower Heartstrings"
+    },
+    "1321135667": {
+        "EN": "Lion's Roar"
+    },
+    "1345343763": {
+        "EN": "Primordial Jade Cutter"
+    },
+    "1348687251": {
+        "EN": "Hunter's Path"
+    },
+    "1363661611": {
+        "EN": "Astral Vulture's Crimson Plumage"
+    },
+    "1388004931": {
+        "EN": "Skyrider Sword"
+    },
+    "1390797107": {
+        "EN": "White Tassel"
+    },
+    "1406746947": {
+        "EN": "Otherworldly Story"
+    },
+    "1437658243": {
+        "EN": "Serpent Spine"
+    },
+    "1441327747": {
+        "EN": "Nocturne's Curtain Call"
+    },
+    "1445287979": {
+        "EN": "Waveriding Whirl"
+    },
+    "1455107995": {
+        "EN": "Lost Prayer to the Sacred Winds"
+    },
+    "1470442731": {
+        "EN": "Missive Windspear"
+    },
+    "1473399443": {
+        "EN": "Splendor of Tranquil Waters"
+    },
+    "1479741275": {
+        "EN": "Azurelight"
+    },
+    "1479961579": {
+        "EN": "Ferrous Shadow"
+    },
+    "1499745907": {
+        "EN": "Prized Isshin Blade"
+    },
+    "1516554699": {
+        "EN": "Quartz"
+    },
+    "1538092267": {
+        "EN": "Prized Isshin Blade"
+    },
+    "1566338363": {
+        "EN": "Reliquary of Truth"
+    },
+    "1573692171": {
+        "EN": "Lightbearing Moonshard"
+    },
+    "1595734083": {
+        "EN": "UNKNOWN"
+    },
+    "1600275315": {
+        "EN": "Haran Geppaku Futsu"
+    },
+    "1608953539": {
+        "EN": "Harbinger of Dawn"
+    },
+    "1664039091": {
+        "EN": "UNKNOWN"
+    },
+    "1673987515": {
+        "EN": "Surf's Up"
+    },
+    "1675686363": {
+        "EN": "Sacrificial Greatsword"
+    },
+    "1773425155": {
+        "EN": "Sword of Descension"
+    },
+    "1790067483": {
+        "EN": "The Dockhand's Assistant"
+    },
+    "1818340435": {
+        "EN": "Uraku Misugiri"
+    },
+    "1860795787": {
+        "EN": "Mouun's Moon"
+    },
+    "1876377995": {
+        "EN": "A Thousand Blazing Suns"
+    },
+    "1890163363": {
+        "EN": "Everlasting Moonglow"
+    },
+    "1901973075": {
+        "EN": "Polar Star"
+    },
+    "1921306659": {
+        "EN": "Fleuve Cendre Ferryman"
+    },
+    "1948935171": {
+        "EN": "Lumidouce Elegy"
+    },
+    "1965515667": {
+        "EN": "Mountain-Bracing Bolt"
+    },
+    "1990641987": {
+        "EN": "Sacrificial Sword"
+    },
+    "1990820123": {
+        "EN": "Amenoma Kageuchi"
+    },
+    "1991707099": {
+        "EN": "Prototype Rancour"
+    },
+    "1994081075": {
+        "EN": "Primordial Jade Vista"
+    },
+    "1997709467": {
+        "EN": "Primordial Jade Winged-Spear"
+    },
+    "2006422931": {
+        "EN": "Lithic Blade"
+    },
+    "2009975571": {
+        "EN": "UNKNOWN"
+    },
+    "2077869763": {
+        "EN": "Tidal Shadow"
+    },
+    "2125206395": {
+        "EN": "Silver Sword"
+    },
+    "2195665683": {
+        "EN": "Sacrificial Fragments"
+    },
+    "2225698043": {
+        "EN": "Prospector's Shovel"
+    },
+    "2242027395": {
+        "EN": "Ebony Bow"
+    },
+    "2265792579": {
+        "EN": "Wolf-Fang"
+    },
+    "2267978875": {
+        "EN": "Fruit of Fulfillment"
+    },
+    "2275710883": {
+        "EN": "Sacrificial Jade"
+    },
+    "2279290283": {
+        "EN": "Magic Guide"
+    },
+    "2320082227": {
+        "EN": "Rainbow Serpent's Rain Bow"
+    },
+    "2324146259": {
+        "EN": "Hakushin Ring"
+    },
+    "2340970067": {
+        "EN": "Seasoned Hunter's Bow"
+    },
+    "2359799475": {
+        "EN": "Akuoumaru"
+    },
+    "2375993851": {
+        "EN": "Royal Longsword"
+    },
+    "2400012995": {
+        "EN": "Sacrificial Bow"
+    },
+    "2410593283": {
+        "EN": "Dull Blade"
+    },
+    "2417717595": {
+        "EN": "Alley Hunter"
+    },
+    "2425414923": {
+        "EN": "Fading Twilight"
+    },
+    "2432865507": {
+        "EN": "Flowing Purity"
+    },
+    "2448629019": {
+        "EN": "Toukabou Shigure"
+    },
+    "2466897131": {
+        "EN": "Starcaller's Watch"
+    },
+    "2474354867": {
+        "EN": "Favonius Sword"
+    },
+    "2481464075": {
+        "EN": "Earth Shaker"
+    },
+    "2491797315": {
+        "EN": "Kitain Cross Spear"
+    },
+    "2507837467": {
+        "EN": "UNKNOWN"
+    },
+    "2521338131": {
+        "EN": "Prototype Amber"
+    },
+    "2539208459": {
+        "EN": "Oathsworn Eye"
+    },
+    "2556914683": {
+        "EN": "The Stringless"
+    },
+    "2559426851": {
+        "EN": "Vivid Notions"
+    },
+    "2587614459": {
+        "EN": "Frostbearer"
+    },
+    "2597527627": {
+        "EN": "The Other Side"
+    },
+    "2600875323": {
+        "EN": "Song of Stillness"
+    },
+    "2614170427": {
+        "EN": "Skyrider Greatsword"
+    },
+    "2664629131": {
+        "EN": "Dragon's Bane"
+    },
+    "2666951267": {
+        "EN": "Waster Greatsword"
+    },
+    "2705029563": {
+        "EN": "Pocket Grimoire"
+    },
+    "2719832059": {
+        "EN": "UNKNOWN"
+    },
+    "2722902043": {
+        "EN": "Ballad of the Boundless Blue"
+    },
+    "2749853923": {
+        "EN": "Festering Desire"
+    },
+    "2753539619": {
+        "EN": "Snow-Tombed Starsilver"
+    },
+    "2792766467": {
+        "EN": "The Unforged"
+    },
+    "2796697027": {
+        "EN": "Beginner's Protector"
+    },
+    "2824690859": {
+        "EN": "Mirror Breaker"
+    },
+    "2832648187": {
+        "EN": "Royal Bow"
+    },
+    "2834063555": {
+        "EN": "Beacon of the Reed Sea"
+    },
+    "2846112523": {
+        "EN": "Sequence of Solitude"
+    },
+    "2847771107": {
+        "EN": "Dialogues of the Desert Sages"
+    },
+    "2878068027": {
+        "EN": "Fractured Halo"
+    },
+    "2918525947": {
+        "EN": "Thundering Pulse"
+    },
+    "2935286715": {
+        "EN": "Royal Spear"
+    },
+    "2944936683": {
+        "EN": "Crimson Moon's Semblance"
+    },
+    "2947140987": {
+        "EN": "The Alley Flash"
+    },
+    "2949448555": {
+        "EN": "Freedom-Sworn"
+    },
+    "2958179435": {
+        "EN": "Scion of the Blazing Sun"
+    },
+    "2963220587": {
+        "EN": "Emerald Orb"
+    },
+    "2988480723": {
+        "EN": "The First Great Magic"
+    },
+    "3016493955": {
+        "EN": "Sword of Narzissenkreuz"
+    },
+    "3063191787": {
+        "EN": "End of the Line"
+    },
+    "3070169307": {
+        "EN": "Iron Point"
+    },
+    "3073454867": {
+        "EN": "Makhaira Aquamarine"
+    },
+    "3090373787": {
+        "EN": "Wine and Song"
+    },
+    "3092853059": {
+        "EN": "Ring of Yaxche"
+    },
+    "3097441915": {
+        "EN": "Debate Club"
+    },
+    "3112679155": {
+        "EN": "Elegy for the End"
+    },
+    "3121311955": {
+        "EN": "Gest of the Mighty Wolf"
+    },
+    "3156385731": {
+        "EN": "Eye of Perception"
+    },
+    "3169209451": {
+        "EN": "Rust"
+    },
+    "3176599083": {
+        "EN": "King's Squire"
+    },
+    "3225522227": {
+        "EN": "Master Key"
+    },
+    "3235324891": {
+        "EN": "Staff of Homa"
+    },
+    "3273999011": {
+        "EN": "Blackcliff Agate"
+    },
+    "3378007475": {
+        "EN": "Blackcliff Longsword"
+    },
+    "3380505211": {
+        "EN": "Snare Hook"
+    },
+    "3421967235": {
+        "EN": "Fillet Blade"
+    },
+    "3426916507": {
+        "EN": "Serenity's Call"
+    },
+    "3432339555": {
+        "EN": "Peak Patrol Song"
+    },
+    "3434743027": {
+        "EN": "Flute of Ezpitzal"
+    },
+    "3439749859": {
+        "EN": "The Viridescent Hunt"
+    },
+    "3443142923": {
+        "EN": "Dragonspine Spear"
+    },
+    "3447737235": {
+        "EN": "Blackcliff Warbow"
+    },
+    "3456986819": {
+        "EN": "Dodoco Tales"
+    },
+    "3459616011": {
+        "EN": "Talking Stick"
+    },
+    "3464027035": {
+        "EN": "Prized Isshin Blade"
+    },
+    "3497155131": {
+        "EN": "Dawning Frost"
+    },
+    "3500935003": {
+        "EN": "Thrilling Tales of Dragon Slayers"
+    },
+    "3532343811": {
+        "EN": "Deicide"
+    },
+    "3573591875": {
+        "EN": "Flame-Forged Insight"
+    },
+    "3584825427": {
+        "EN": "Apprentice's Notes"
+    },
+    "3587621259": {
+        "EN": "The Flute"
+    },
+    "3600623979": {
+        "EN": "Hunter's Bow"
+    },
+    "3625393819": {
+        "EN": "Prototype Crescent"
+    },
+    "3660626387": {
+        "EN": "Crane's Echoing Call"
+    },
+    "3673792067": {
+        "EN": "Traveler's Handy Sword"
+    },
+    "3684723963": {
+        "EN": "Rainslasher"
+    },
+    "3693117451": {
+        "EN": "Portable Power Saw"
+    },
+    "3717849275": {
+        "EN": "Engulfing Lightning"
+    },
+    "3719372715": {
+        "EN": "Twin Nephrite"
+    },
+    "3722933411": {
+        "EN": "Prototype Archaic"
+    },
+    "3755004051": {
+        "EN": "Favonius Lance"
+    },
+    "3762437019": {
+        "EN": "UNKNOWN"
+    },
+    "3780343147": {
+        "EN": "One Side"
+    },
+    "3790622667": {
+        "EN": "Sunny Morning Sleep-In"
+    },
+    "3796905611": {
+        "EN": "The Black Sword"
+    },
+    "3812523339": {
+        "EN": "Verdict"
+    },
+    "3827789435": {
+        "EN": "Royal Grimoire"
+    },
+    "3869745515": {
+        "EN": "Bloodsoaked Ruins"
+    },
+    "3914951691": {
+        "EN": "Redhorn Stonethresher"
+    },
+    "3933622347": {
+        "EN": "Skyward Harp"
+    },
+    "3949653579": {
+        "EN": "Mitternachts Waltz"
+    },
+    "3975746731": {
+        "EN": "Raven Bow"
+    },
+    "3995710363": {
+        "EN": "Wolf's Gravestone"
+    },
+    "4007372867": {
+        "EN": "Jadefall's Splendor"
+    },
+    "4019353779": {
+        "EN": "Flower-Wreathed Feathers"
+    },
+    "4038676067": {
+        "EN": "Cloudforged"
+    },
+    "4049410651": {
+        "EN": "Deathmatch"
+    },
+    "4055003299": {
+        "EN": "Skyward Blade"
+    },
+    "4090429643": {
+        "EN": "Bloodtainted Greatsword"
+    },
+    "4099034547": {
+        "EN": "Athame Artis"
+    },
+    "4103022435": {
+        "EN": "Iron Sting"
+    },
+    "4103766499": {
+        "EN": "Black Tassel"
+    },
+    "4122509083": {
+        "EN": "Wavebreaker's Fin"
+    },
+    "4123950051": {
+        "EN": "UNKNOWN"
+    },
+    "4124851547": {
+        "EN": "Mistsplitter Reforged"
+    },
+    "4137694339": {
+        "EN": "UNKNOWN"
+    },
+    "4139294531": {
+        "EN": "Messenger"
+    },
+    "4158505619": {
+        "EN": "Skyward Spine"
+    },
+    "4158971171": {
+        "EN": "Rightful Reward"
+    },
+    "4162981171": {
+        "EN": "UNKNOWN"
+    },
+    "4176923379": {
+        "EN": "Tome of the Eternal Flow"
+    },
+    "4186179883": {
+        "EN": "Hamayumi"
+    },
+    "4193089947": {
+        "EN": "Katsuragikiri Nagamasa"
+    },
+    "4230231107": {
+        "EN": "Aqua Simulacra"
+    },
+    "4238339131": {
+        "EN": "Staff of the Scarlet Sands"
+    },
+    "4267718859": {
+        "EN": "Recurve Bow"
+    }
+}

@@ -1,7 +1,10 @@
 import json
 import os
+import aiohttp
+
 from pyrogram import Client, filters
 from dotenv import load_dotenv
+
 from character_card import compare_characters
 
 load_dotenv()
@@ -108,10 +111,52 @@ async def commands(client, message):
             char_id
         )
 
+        if not image_buffer:
+            await message.edit("❌ Card generation failed")
+            return
+
+        # -------------------------
+        # Ranking
+        # -------------------------
+        ranking_text = ""
+
+        try:
+            ranking_api = (
+                f"https://test-xehj.onrender.com/get/ranking/{current_uid}"
+            )
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    ranking_api,
+                    timeout=5
+                ) as rank_resp:
+
+                    if rank_resp.status == 200:
+                        all_ranks = await rank_resp.json()
+
+                        char_rank_data = all_ranks.get(
+                            str(char_id)
+                        )
+
+                        if char_rank_data:
+                            rank = char_rank_data.get("ranking")
+                            out_of = char_rank_data.get("outOf")
+                            percent = char_rank_data.get("percent")
+
+                            ranking_text = (
+                                f"\n\n🏆 Global Rank: {rank}/{out_of}"
+                                f"\n⭐ Top: {percent}%"
+                            )
+
+        except Exception as rank_error:
+            print(
+                f"Ranking API Error: {rank_error}"
+            )
+
         await client.send_photo(
             chat_id=message.chat.id,
             photo=image_buffer,
-            caption=parts[1]
+            caption=f"{parts[1]}{ranking_text}"
         )
 
         await message.delete()

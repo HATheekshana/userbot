@@ -144,20 +144,26 @@ async def commands(client, message):
                             percent = char_rank_data.get("percent")
 
                             ranking_text = (
-                                f"\n\n🏆 Global Rank: {rank}/{out_of}"
-                                f"\n⭐ Top: {percent}%"
+                                f"\n\nʚଓ Global Rank: {rank}/{out_of}"
+                                f"\nʚଓ Top: {percent}%"
                             )
 
         except Exception as rank_error:
             print(
                 f"Ranking API Error: {rank_error}"
             )
+        character_name = CHAR_MAP[str(char_id)]["name"]
 
+        caption = (
+                    f"<b>{character_name}</b>"
+                    f"{ranking_text}"
+                )
         await client.send_photo(
-            chat_id=message.chat.id,
-            photo=image_buffer,
-            caption=f"{parts[1]}{ranking_text}"
-        )
+        chat_id=message.chat.id,
+        photo=image_buffer,
+        caption=caption,
+        parse_mode="html"
+            )
 
         await message.delete()
 

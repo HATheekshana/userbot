@@ -162,7 +162,7 @@ async def commands(client, message):
         chat_id=message.chat.id,
         photo=image_buffer,
         caption=caption,
-        parse_mode="html"
+        parse_mode="HTML"
             )
 
         await message.delete()

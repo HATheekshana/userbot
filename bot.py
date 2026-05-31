@@ -52,7 +52,7 @@ async def commands(client, message):
             current_uid = UID1
             active = "UID1"
 
-        await message.reply(
+        await message.edit(
             f"✅ Switched to {active}\n"
             f"UID: {current_uid}"
         )
@@ -62,7 +62,7 @@ async def commands(client, message):
     # SHOW CURRENT UID
     # -------------------------
     if text.lower() == "!uid":
-        await message.reply(
+        await message.edit(
             f"Current UID:\n{current_uid}"
         )
         return
@@ -76,7 +76,7 @@ async def commands(client, message):
     parts = text.split(maxsplit=1)
 
     if len(parts) < 2:
-        await message.reply(
+        await message.edit(
             "Usage:\n"
             "!show Furina\n"
             "!show Arlecchino\n"
@@ -95,12 +95,12 @@ async def commands(client, message):
                 break
 
     if not char_id:
-        await message.reply(
+        await message.edit(
             f"❌ Character not found:\n{parts[1]}"
         )
         return
 
-    status = await message.reply("🎴 Generating card...")
+    await message.edit("🎴 Generating card...")
 
     try:
         image_buffer = await compare_characters(
@@ -111,14 +111,13 @@ async def commands(client, message):
         await client.send_photo(
             chat_id=message.chat.id,
             photo=image_buffer,
-            caption=f"{parts[1]}",
-            reply_to_message_id=message.id
+            caption=parts[1]
         )
 
-        await status.delete()
+        await message.delete()
 
     except Exception as e:
-        await status.edit(
+        await message.edit(
             f"❌ Error:\n{e}"
         )
 

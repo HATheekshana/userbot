@@ -161,8 +161,7 @@ async def commands(client, message):
         await client.send_photo(
         chat_id=message.chat.id,
         photo=image_buffer,
-        caption=caption,
-        parse_mode="HTML"
+        caption=caption
             )
 
         await message.delete()

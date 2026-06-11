@@ -1,10 +1,13 @@
 import json
 import os
 import aiohttp
+
 from pyrogram import Client, filters
-from dotenv import load_dotenv
-from character_card import compare_characters
 from pyrogram.enums import ParseMode
+from dotenv import load_dotenv
+
+from character_card import compare_characters
+
 load_dotenv()
 
 API_ID = int(os.getenv("API_ID"))
@@ -14,7 +17,6 @@ UID1 = os.getenv("UID1")
 UID2 = os.getenv("UID2")
 
 current_uid = UID1
-pending_splash_char = None
 
 # -------------------------
 # LOAD CHARACTER DATA
@@ -38,7 +40,8 @@ for char_id, info in CHAR_MAP.items():
 app = Client(
     "genshin_userbot",
     api_id=API_ID,
-    api_hash=API_HASH
+    api_hash=API_HASH,
+    parse_mode=ParseMode.HTML
 )
 
 # -------------------------
@@ -46,27 +49,35 @@ app = Client(
 # -------------------------
 @app.on_message(filters.me & filters.text)
 async def commands(client, message):
-    global current_uid, pending_splash_char
+    global current_uid
 
     text = message.text.strip()
+    low = text.lower()
 
     # SWITCH UID
-    if text.lower() == "!switch":
+    if low == "!switch":
         current_uid = UID2 if current_uid == UID1 else UID1
         await message.edit(f"✅ Switched UID\n{current_uid}")
         return
 
     # SHOW UID
-    if text.lower() == "!uid":
+    if low == "!uid":
         await message.edit(f"Current UID:\n{current_uid}")
         return
 
-    # ADD SPLASH
-    if text.lower().startswith("!add_splash"):
+    # -------------------------
+    # ADD SPLASH (REPLY SYSTEM)
+    # -------------------------
+    if low.startswith("!add_splash"):
         parts = text.split(maxsplit=1)
 
         if len(parts) < 2:
-            await message.edit("Usage:\n!add_splash Chasca")
+            await message.edit("Usage:\nReply to image + !add_splash Chasca")
+            return
+
+        # MUST BE REPLY TO IMAGE
+        if not message.reply_to_message or not message.reply_to_message.photo:
+            await message.edit("❌ Reply to an image first")
             return
 
         query = parts[1].strip().lower()
@@ -80,19 +91,38 @@ async def commands(client, message):
                     break
 
         if not char_id:
-            await message.edit(f"❌ Character not found:\n{parts[1]}")
+            await message.edit("❌ Character not found")
             return
 
-        pending_splash_char = char_id
+        os.makedirs("custom_splash", exist_ok=True)
+
+        # remove old splash
+        for f in os.listdir("custom_splash"):
+            if f.startswith(str(char_id)):
+                os.remove(os.path.join("custom_splash", f))
+
+        # download replied image
+        file_path = await client.download_media(
+            message.reply_to_message,
+            file_name="custom_splash/temp"
+        )
+
+        ext = os.path.splitext(file_path)[1]
+        if not ext:
+            ext = ".jpg"
+
+        final_path = f"custom_splash/{char_id}{ext}"
+        os.replace(file_path, final_path)
 
         await message.edit(
-            f"📸 Send image for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>",
-            parse_mode=ParseMode.HTML
+            f"✅ Splash saved for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>"
         )
         return
 
+    # -------------------------
     # SHOW CHARACTER
-    if not text.lower().startswith("!show"):
+    # -------------------------
+    if not low.startswith("!show"):
         return
 
     parts = text.split(maxsplit=1)
@@ -157,48 +187,6 @@ async def commands(client, message):
 
     except Exception as e:
         await message.edit(f"❌ Error:\n{e}")
-
-
-# -------------------------
-# SPLASH HANDLER (FIXED)
-# -------------------------
-@app.on_message(filters.me & filters.photo)
-async def handle_splash_upload(client, message):
-    global pending_splash_char
-
-    if not pending_splash_char:
-        return
-
-    char_id = pending_splash_char
-    pending_splash_char = None
-
-    os.makedirs("custom_splash", exist_ok=True)
-
-    # remove old splash
-    for f in os.listdir("custom_splash"):
-        if f.startswith(str(char_id)):
-            os.remove(os.path.join("custom_splash", f))
-
-    # download file properly
-    file_path = await client.download_media(
-        message.photo.file_id,
-        file_name="custom_splash/temp"
-    )
-
-    # fix extension
-    ext = os.path.splitext(file_path)[1]
-    if not ext:
-        ext = ".jpg"
-
-    final_path = f"custom_splash/{char_id}{ext}"
-
-    os.replace(file_path, final_path)
-
-    # IMPORTANT: use reply, not edit
-    await message.reply_text(
-        f"✅ Splash saved for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>",
-        parse_mode=ParseMode.HTML
-    )
 
 
 print("Userbot started...")

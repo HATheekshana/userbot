@@ -29,8 +29,7 @@ with open("char.json", "r", encoding="utf-8") as f:
     CHAR_MAP = json.load(f)
 
 SPECIAL_MAPPINGS = {
-    "Ambor": "Amber", "Noel": "Noelle", "Feiyan": "Yanfei",
-    "Shougun": "Raiden", "Tohma": "Thoma", "Heizo": "Heizou",
+    "Ambor": "Amber", "Noel": "Noelle", "Feiyan": "Yanfei", "Tohma": "Thoma", "Heizo": "Heizou",
     "Liney": "Lyney", "Liuyun": "Xianyun"
 }
 

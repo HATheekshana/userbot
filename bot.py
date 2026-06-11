@@ -4,7 +4,7 @@ import aiohttp
 from pyrogram import Client, filters
 from dotenv import load_dotenv
 from character_card import compare_characters
-
+from pyrogram.enums import ParseMode
 load_dotenv()
 
 API_ID = int(os.getenv("API_ID"))
@@ -87,7 +87,7 @@ async def commands(client, message):
 
         await message.edit(
             f"📸 Send image for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>",
-            parse_mode="hml"
+            parse_mode=ParseMode.HTML
         )
         return
 
@@ -197,7 +197,7 @@ async def handle_splash_upload(client, message):
     # IMPORTANT: use reply, not edit
     await message.reply_text(
         f"✅ Splash saved for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>",
-        parse_mode="hml"
+        parse_mode=ParseMode.HTML
     )
 
 

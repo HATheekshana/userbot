@@ -33,7 +33,14 @@ SPECIAL_MAPPINGS = {
     "Shougun": "Raiden", "Tohma": "Thoma", "Heizo": "Heizou",
     "Liney": "Lyney", "Liuyun": "Xianyun"
 }
-
+NAMECARD_BY_NAME = {
+    "Ambor": "210003",
+    "Noel": "210014",
+    "Feiyan": "210069",
+    "Tohma": "210101",
+    "Shougun": "210092",
+    "Liuyun": "210187",
+}
 # --- Helper Functions ---
 
 def draw_text_with_shadow(draw, text, position, font_path, font_size, 
@@ -103,13 +110,19 @@ def extract_char_stats(avatar_list, char_id, element):
     return None
 
 def get_namecard_urls(avatar_icon):
-    base_name = avatar_icon.replace("UI_AvatarIcon_", "")
-    search_name = SPECIAL_MAPPINGS.get(base_name, base_name)
-    for _, info in NAMECARD_DATA.items():
-        icon = info.get("icon", "")
-        if f"_{search_name}_" in icon:
-            banner = icon.replace("NameCardPic", "NameCardBanner")
-            return [f"https://enka.network/ui/{banner}.png", f"https://enka.network/ui/{icon}.png"]
+    base = avatar_icon.replace("UI_AvatarIcon_", "")
+
+    id_ = NAMECARD_BY_NAME.get(base)
+
+    if id_ and id_ in NAMECARD_DATA:
+        icon = NAMECARD_DATA[id_]["icon"]
+        banner = icon.replace("NameCardPic", "NameCardBanner")
+
+        return [
+            f"https://enka.network/ui/{banner}.png",
+            f"https://enka.network/ui/{icon}.png"
+        ]
+
     return ["https://enka.network/ui/UI_NameCardBanner_0_P.png"]
 
 def get_splash_url(avatar_icon):

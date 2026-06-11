@@ -87,7 +87,7 @@ async def commands(client, message):
 
         await message.edit(
             f"📸 Send image for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>",
-            parse_mode="HTML"
+            parse_mode="hml"
         )
         return
 
@@ -197,7 +197,7 @@ async def handle_splash_upload(client, message):
     # IMPORTANT: use reply, not edit
     await message.reply_text(
         f"✅ Splash saved for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>",
-        parse_mode="HTML"
+        parse_mode="hml"
     )
 
 

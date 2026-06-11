@@ -34,7 +34,7 @@ SPECIAL_MAPPINGS = {
     "Liney": "Lyney", "Liuyun": "Xianyun"
 }
 SPECIAL_MAPPINGS2 = {
-    "Ambor": "Amber", "Noel": "Noelle", "Feiyan": "Yanfei", "Tohma": "Thoma", "Heizo": "Heizou",
+    "Ambor": "Amber","yae": "yae1","Yae Miko": "yae1","Miko": "yae1", "Noel": "Noelle", "Feiyan": "Yanfei", "Tohma": "Thoma", "Heizo": "Heizou",
     "Liney": "Lyney", "Liuyun": "Xianyun"
 }
 
@@ -114,7 +114,7 @@ def get_namecard_urls(avatar_icon):
         if f"_{search_name}_" in icon:
             banner = icon.replace("NameCardPic", "NameCardBanner")
             return [f"https://enka.network/ui/{banner}.png", f"https://enka.network/ui/{icon}.png"]
-    return ["https://enka.network/ui/UI_NameCardBanner_0_P.png"]
+    return ["https://enka.network/ui/UI_NameCardPic_Yae1_P.png"]
 
 def get_splash_url(avatar_icon):
     base_name = avatar_icon.replace("UI_AvatarIcon_", "")

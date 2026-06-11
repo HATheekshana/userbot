@@ -33,6 +33,10 @@ SPECIAL_MAPPINGS = {
     "Shougun": "Raiden", "Tohma": "Thoma", "Heizo": "Heizou",
     "Liney": "Lyney", "Liuyun": "Xianyun"
 }
+SPECIAL_MAPPINGS2 = {
+    "Ambor": "Amber", "Noel": "Noelle", "Feiyan": "Yanfei", "Tohma": "Thoma", "Heizo": "Heizou",
+    "Liney": "Lyney", "Liuyun": "Xianyun"
+}
 
 # --- Helper Functions ---
 
@@ -104,7 +108,7 @@ def extract_char_stats(avatar_list, char_id, element):
 
 def get_namecard_urls(avatar_icon):
     base_name = avatar_icon.replace("UI_AvatarIcon_", "")
-    search_name = SPECIAL_MAPPINGS.get(base_name, base_name)
+    search_name = SPECIAL_MAPPINGS2.get(base_name, base_name)
     for _, info in NAMECARD_DATA.items():
         icon = info.get("icon", "")
         if f"_{search_name}_" in icon:

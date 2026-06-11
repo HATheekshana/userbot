@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import json
 from io import BytesIO
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageOps,ImageFont, ImageChops, ImageEnhance
 from graph import get_complete_radar_module
 # Local Imports
@@ -170,7 +171,20 @@ async def compare_characters(uid, char_id):
 
     async with aiohttp.ClientSession() as session:
         # Fetch assets INSIDE the session block
-        splash_task = asyncio.create_task(fetch_image(session, get_splash_url(avatar_icon)))
+        splash_img = None
+
+        custom_dir = Path("custom_splash")
+        for ext in (".png", ".jpg", ".jpeg", ".webp"):
+            custom_file = custom_dir / f"{char_id}{ext}"
+            if custom_file.exists():
+                splash_img = Image.open(custom_file).convert("RGBA")
+                print(f"Using custom splash: {custom_file}")
+                break
+        if splash_img is None:
+            splash_img = await fetch_image(
+                session,
+                get_splash_url(avatar_icon)
+            )
         bg_urls = get_namecard_urls(avatar_icon)
         
         bg_img = None
@@ -178,7 +192,7 @@ async def compare_characters(uid, char_id):
             bg_img = await fetch_image(session, url)
             if bg_img: break
         
-        splash_img = await splash_task
+        
         weapon_ic = stats['weapon'].get('icon')
         weapon_img = await fetch_image(session, f"https://enka.network/ui/{weapon_ic}.png")
 

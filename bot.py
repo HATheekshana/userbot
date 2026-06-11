@@ -45,6 +45,25 @@ app = Client(
 )
 
 # -------------------------
+# HELPERS
+# -------------------------
+def is_image_message(msg):
+    """
+    Accepts:
+    - photo
+    - document images (png/jpg/webp/jpeg)
+    """
+    if msg.photo:
+        return True
+
+    if msg.document:
+        mime = msg.document.mime_type or ""
+        return mime.startswith("image/")
+
+    return False
+
+
+# -------------------------
 # COMMAND HANDLER
 # -------------------------
 @app.on_message(filters.me & filters.text)
@@ -66,18 +85,17 @@ async def commands(client, message):
         return
 
     # -------------------------
-    # ADD SPLASH (REPLY SYSTEM)
+    # ADD SPLASH (PHOTO + FILE SUPPORT)
     # -------------------------
     if low.startswith("!add_splash"):
         parts = text.split(maxsplit=1)
 
         if len(parts) < 2:
-            await message.edit("Usage:\nReply to image + !add_splash Chasca")
+            await message.edit("Usage:\nReply to image/file + !add_splash Chasca")
             return
 
-        # MUST BE REPLY TO IMAGE
-        if not message.reply_to_message or not message.reply_to_message.photo:
-            await message.edit("❌ Reply to an image first")
+        if not message.reply_to_message or not is_image_message(message.reply_to_message):
+            await message.edit("❌ Reply to an IMAGE or FILE (png/jpg/webp)")
             return
 
         query = parts[1].strip().lower()
@@ -101,7 +119,7 @@ async def commands(client, message):
             if f.startswith(str(char_id)):
                 os.remove(os.path.join("custom_splash", f))
 
-        # download replied image
+        # download file (photo OR document)
         file_path = await client.download_media(
             message.reply_to_message,
             file_name="custom_splash/temp"
@@ -154,7 +172,6 @@ async def commands(client, message):
             await message.edit("❌ Card generation failed")
             return
 
-        # RANKING
         ranking_text = ""
 
         try:

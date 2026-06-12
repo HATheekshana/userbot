@@ -7,7 +7,6 @@ from io import BytesIO
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageOps, ImageChops, ImageEnhance, ImageFont
 
-from graph import get_complete_radar_module
 from t_c import CharacterBuildFetcher, HoyolabClient, EnkaClient, draw_build_column
 from artifacts import draw_horizontal_artifacts
 
@@ -323,21 +322,6 @@ class CharacterCardGenerator:
                 draw_text_with_shadow(draw, label, (stat_start_x + 60, row_y + 18), self.font_path, 24, text_color=(230, 230, 230), anchor="lm")
                 value_text = fmt.format(stats.get(key, 0))
                 draw_text_with_shadow(draw, value_text, (stat_start_x + 660, row_y + 18), self.font_path, 26, anchor="rm")
-
-            graph_position = (1450, 150)
-            radar_graph = get_complete_radar_module(stats, char_id, final_size=(380, 380))
-            if radar_graph:
-                radar_bg = Image.open("asstests/icons/radar_bg.png").convert("RGBA")
-                radar_bg = radar_bg.resize((530, 520), Image.Resampling.LANCZOS)
-                ui_layer.paste(radar_bg, (graph_position[0] - 75, graph_position[1] - 60), radar_bg)
-                ui_layer.paste(radar_graph, graph_position, radar_graph)
-            else:
-                try:
-                    fallback = Image.open("asstests/icons/no_data.png").convert("RGBA")
-                    fallback = fallback.resize((300, 300), Image.Resampling.LANCZOS)
-                    ui_layer.paste(fallback, (graph_position[0], graph_position[1]), fallback)
-                except Exception:
-                    pass
 
             await draw_horizontal_artifacts(session, ui_layer, avatar_record, 150, 650, ImageFont.truetype(self.font_path, 22))
             final_image = Image.alpha_composite(background_image, ui_layer)

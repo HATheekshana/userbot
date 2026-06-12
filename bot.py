@@ -2,6 +2,7 @@ import json
 import os
 import aiohttp
 import traceback
+from pathlib import Path
 
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
@@ -9,7 +10,12 @@ from dotenv import load_dotenv
 
 from character_card import compare_characters
 
-load_dotenv()
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
+print(f"Loaded .env from: {env_path}")
+print("HOYOLAB_COOKIE set:", bool(os.getenv("HOYOLAB_COOKIE")))
+print("ITUID/ltuid set:", bool(os.getenv("ITUID") or os.getenv("ltuid")))
+print("ITOKEN_V2/itoken_v2 set:", bool(os.getenv("ITOKEN_V2") or os.getenv("itoken_v2")))
 
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")

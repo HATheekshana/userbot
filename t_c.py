@@ -8,13 +8,17 @@ from PIL import Image, ImageDraw, ImageOps, ImageFilter, ImageFont
 # --- HOYOLAB / ENKA SUPPORT ---
 def get_hoyolab_headers():
     cookie = os.getenv("HOYOLAB_COOKIE")
-    if not cookie:
+    if cookie:
+        print("Hoyolab auth: using HOYOLAB_COOKIE")
+    else:
         ltuid = os.getenv("ITUID") or os.getenv("ltuid")
         ltoken = os.getenv("ITOKEN_V2") or os.getenv("itoken_v2")
         if ltuid and ltoken:
             cookie = f"ltuid={ltuid}; ltoken={ltoken};"
+            print("Hoyolab auth: built cookie from ITUID+ITOKEN_V2")
 
     if not cookie:
+        print("Hoyolab auth missing: falling back to Enka")
         return None
 
     return {
@@ -43,14 +47,19 @@ async def get_hoyolab_avatar_data(uid):
                 f"https://api-os-takumi.mihoyo.com/game_record/app/genshin/api/character?server={server}&role_id={uid}"
             )
             async with session.get(char_url, timeout=10) as resp:
+                print(f"get_hoyolab_avatar_data: status={resp.status} for uid={uid}")
                 if resp.status != 200:
                     return None
                 data = await resp.json()
                 if data.get("retcode") != 0:
+                    print(f"get_hoyolab_avatar_data: retcode={data.get('retcode')} for uid={uid}")
                     return None
                 avatars = data.get("data", {}).get("avatars", []) or []
+                print(f"get_hoyolab_avatar_data: loaded {len(avatars)} avatars for uid={uid}")
                 return {"avatarInfoList": avatars}
-        except Exception:
+        except Exception as e:
+            print(f"get_hoyolab_avatar_data: exception for uid={uid}: {e}")
+            traceback.print_exc()
             return None
 
 
@@ -115,15 +124,23 @@ async def fetch_build_assets(uid,char_id):
     avatar_data = await get_hoyolab_avatar_data(uid)
 
     async with aiohttp.ClientSession() as session:
+        source = "Enka"
         if avatar_data is None:
             r1 = await session.get(f"https://enka.network/api/uid/{uid}")
             d1 = await r1.json()
         else:
+            source = "Hoyolab"
             d1 = avatar_data
 
-        me_data = get_user_char_data(d1.get("avatarInfoList", []), char_id, avatars_db)
+        avatar_list = d1.get("avatarInfoList", [])
+        print(f"fetch_build_assets: source={source}, avatars={len(avatar_list)} for uid={uid}")
+        if avatar_list:
+            print("fetch_build_assets: avatar ids=", [str(c.get('avatarId')) for c in avatar_list])
+
+        me_data = get_user_char_data(avatar_list, char_id, avatars_db)
 
         if not me_data:
+            print(f"fetch_build_assets: no build data found for char_id={char_id} in source={source}")
             return None, None, None
 
         # Fetch icons for both (showing me_data icons as the reference)

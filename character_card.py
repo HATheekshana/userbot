@@ -54,19 +54,24 @@ def draw_text_with_shadow(draw, text, position, font_path, font_size,
 async def get_enkadata(uid):
     hoyo = await get_hoyolab_data(uid)
     if hoyo and hoyo.get("avatarInfoList"):
+        print(f"get_enkadata: loaded {len(hoyo.get('avatarInfoList', []))} avatars from Hoyolab for uid={uid}")
         return hoyo
 
+    print(f"get_enkadata: Hoyolab fallback to Enka for uid={uid}")
     url = f"https://enka.network/api/uid/{uid}"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
                 data = await response.json()
                 player_info = data.get("playerInfo", {})
+                avatar_list = data.get("avatarInfoList", [])
+                print(f"get_enkadata: loaded {len(avatar_list)} avatars from Enka for uid={uid}")
                 return {
                     "nickname": player_info.get("nickname", ""),
-                    "avatarInfoList": data.get("avatarInfoList", []),
+                    "avatarInfoList": avatar_list,
                     "showAvatarInfoList": player_info.get("showAvatarInfoList", [])
                 }
+            print(f"get_enkadata: Enka status {response.status} for uid={uid}")
             return {"nickname": "", "avatarInfoList": [], "showAvatarInfoList": []}
 
 def get_prop(stats_dict, prop_id):
@@ -74,13 +79,17 @@ def get_prop(stats_dict, prop_id):
 
 def get_hoyolab_headers():
     cookie = os.getenv("HOYOLAB_COOKIE")
-    if not cookie:
+    if cookie:
+        print("Hoyolab auth: using HOYOLAB_COOKIE")
+    else:
         ltuid = os.getenv("ITUID") or os.getenv("ltuid")
         ltoken = os.getenv("ITOKEN_V2") or os.getenv("itoken_v2")
         if ltuid and ltoken:
             cookie = f"ltuid={ltuid}; ltoken={ltoken};"
+            print("Hoyolab auth: built cookie from ITUID+ITOKEN_V2")
 
     if not cookie:
+        print("Hoyolab auth missing: falling back to Enka")
         return None
 
     return {
@@ -107,13 +116,17 @@ async def get_hoyolab_data(uid):
                 f"https://api-os-takumi.mihoyo.com/game_record/app/card/wapi/getGameRecordCard?server={server}&uid={uid}"
             )
             async with session.get(card_url, timeout=10) as resp:
+                print(f"get_hoyolab_data: card_url status={resp.status} for uid={uid}")
                 if resp.status != 200:
                     return None
                 data = await resp.json()
                 if data.get("retcode") != 0:
+                    print(f"get_hoyolab_data: card_url retcode={data.get('retcode')} for uid={uid}")
                     return None
                 nickname = data.get("data", {}).get("userInfo", {}).get("nickname", "")
-        except Exception:
+        except Exception as e:
+            print(f"get_hoyolab_data: card_url exception for uid={uid}: {e}")
+            traceback.print_exc()
             return None
 
         try:
@@ -121,14 +134,19 @@ async def get_hoyolab_data(uid):
                 f"https://api-os-takumi.mihoyo.com/game_record/app/genshin/api/character?server={server}&role_id={uid}"
             )
             async with session.get(char_url, timeout=10) as resp:
+                print(f"get_hoyolab_data: char_url status={resp.status} for uid={uid}")
                 if resp.status != 200:
                     return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
                 data = await resp.json()
                 if data.get("retcode") != 0:
+                    print(f"get_hoyolab_data: char_url retcode={data.get('retcode')} for uid={uid}")
                     return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
                 avatars = data.get("data", {}).get("avatars", []) or []
+                print(f"get_hoyolab_data: loaded {len(avatars)} avatars for uid={uid}")
                 return {"nickname": nickname, "avatarInfoList": avatars, "showAvatarInfoList": []}
-        except Exception:
+        except Exception as e:
+            print(f"get_hoyolab_data: char_url exception for uid={uid}: {e}")
+            traceback.print_exc()
             return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
 
 

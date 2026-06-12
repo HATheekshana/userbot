@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import json
 import os
+import traceback
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageOps, ImageFilter, ImageFont
 

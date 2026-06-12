@@ -49,10 +49,57 @@ class HoyolabClient:
             "Referer": "https://webstatic.mihoyo.com/",
             "Origin": "https://webstatic.mihoyo.com",
             "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
             "x-rpc-client_type": "5",
             "x-rpc-app_version": self.app_version,
             "x-rpc-device_id": self.device_id,
+            "x-rpc-sys_version": "10",
+            "x-rpc-channel": "mihoyo",
+            "x-rpc-language": "en-us",
             "Cookie": self.cookie,
+        }
+
+    def _normalize_avatar_entry(self, raw_avatar):
+        return {
+            "avatarId": raw_avatar.get("avatarId"),
+            "skillDepotId": raw_avatar.get("skillDepotId"),
+            "skillLevelMap": raw_avatar.get("skillLevelMap") or {},
+            "proudSkillExtraLevelMap": raw_avatar.get("proudSkillExtraLevelMap") or {},
+            "talentIdList": raw_avatar.get("talentIdList") or [],
+            "equipList": raw_avatar.get("equipList") or [],
+            "fightPropMap": raw_avatar.get("fightPropMap") or {},
+            "propMap": raw_avatar.get("propMap") or {},
+            "fetterInfo": raw_avatar.get("fetterInfo") or {},
+            "inherentProudSkillList": raw_avatar.get("inherentProudSkillList") or [],
+            "level": raw_avatar.get("level"),
+            "costumeId": raw_avatar.get("costumeId"),
+            "element": raw_avatar.get("element"),
+            "nameCardId": raw_avatar.get("nameCardId"),
+        }
+
+    def _normalize_show_avatar_info(self, raw_avatars):
+        normalized = []
+        for avatar in raw_avatars:
+            normalized.append({
+                "avatarId": avatar.get("avatarId"),
+                "level": avatar.get("level"),
+                "talentLevel": avatar.get("talentLevel"),
+                "energyType": avatar.get("energyType"),
+                "costumeId": avatar.get("costumeId"),
+            })
+        return normalized
+
+    def _build_enka_style_profile(self, nickname, raw_avatars):
+        avatar_list = [self._normalize_avatar_entry(avatar) for avatar in raw_avatars]
+        show_avatar_list = self._normalize_show_avatar_info(raw_avatars)
+        return {
+            "playerInfo": {
+                "nickname": nickname,
+                "showAvatarInfoList": show_avatar_list,
+            },
+            "nickname": nickname,
+            "avatarInfoList": avatar_list,
+            "showAvatarInfoList": show_avatar_list,
         }
 
     async def fetch_player_profile(self, uid):
@@ -77,11 +124,13 @@ class HoyolabClient:
 
                             data = await response.json()
                             if data.get("retcode") != 0:
-                                print(f"HoyolabClient: card_url retcode={data.get('retcode')} host={host} server={server} uid={uid}")
+                                print(f"HoyolabClient: card_url retcode={data.get('retcode')} message={data.get('message')} host={host} server={server} uid={uid}")
                                 continue
 
                             nickname = data.get("data", {}).get("userInfo", {}).get("nickname", "")
-                            break
+                            if nickname:
+                                break
+                            print(f"HoyolabClient: card_url returned empty nickname host={host} server={server} uid={uid}")
                     except Exception as error:
                         print(f"HoyolabClient: card_url exception host={host} server={server} uid={uid}: {error}")
                         traceback.print_exc()
@@ -107,23 +156,20 @@ class HoyolabClient:
 
                             data = await response.json()
                             if data.get("retcode") != 0:
-                                print(f"HoyolabClient: character_url retcode={data.get('retcode')} host={host} server={server} uid={uid}")
+                                print(f"HoyolabClient: character_url retcode={data.get('retcode')} message={data.get('message')} host={host} server={server} uid={uid}")
                                 continue
 
                             avatars = data.get("data", {}).get("avatars", []) or []
+                            if not avatars:
+                                print(f"HoyolabClient: character_url returned no avatars host={host} server={server} uid={uid}")
+                                continue
+
                             print(f"HoyolabClient: loaded {len(avatars)} avatars for uid={uid} host={host} server={server}")
-                            return {
-                                "nickname": nickname,
-                                "avatarInfoList": avatars,
-                                "showAvatarInfoList": [],
-                            }
+                            return self._build_enka_style_profile(nickname, avatars)
                     except Exception as error:
                         print(f"HoyolabClient: character_url exception host={host} server={server} uid={uid}: {error}")
                         traceback.print_exc()
                         continue
-
-        print(f"HoyolabClient: failed on all hosts for uid={uid}")
-        return None
 
         print(f"HoyolabClient: failed on all hosts for uid={uid}")
         return None
@@ -169,21 +215,30 @@ class CharacterBuildFetcher:
                 continue
 
             metadata = avatars_db.get(str(char_id), {})
-            skill_order = metadata.get("SkillOrder", [])
-            proud_map = metadata.get("ProudMap", {})
-            skill_base = avatar_entry.get("skillLevelMap", {})
-            skill_extra = avatar_entry.get("proudSkillExtraLevelMap", {})
+            skill_order = metadata.get("SkillOrder", []) or []
+            proud_map = metadata.get("ProudMap", {}) or {}
+            skill_base = avatar_entry.get("skillLevelMap") or {}
+            skill_extra = avatar_entry.get("proudSkillExtraLevelMap") or {}
+            talent_ids = avatar_entry.get("talentIdList") or []
+
+            if not skill_order:
+                print(f"CharacterBuildFetcher: missing SkillOrder metadata for char_id={char_id}")
+                return None
 
             skill_levels = []
             for skill_id in skill_order:
-                level = skill_base.get(str(skill_id), 1) + skill_extra.get(str(proud_map.get(str(skill_id))), 0)
+                level = skill_base.get(str(skill_id), 1)
+                if proud_map:
+                    extra_key = proud_map.get(str(skill_id))
+                    if extra_key is not None:
+                        level += skill_extra.get(str(extra_key), 0)
                 skill_levels.append(level)
 
             return {
                 "talents": skill_levels,
-                "cons_count": len(avatar_entry.get("talentIdList", [])),
-                "cons_icons": metadata.get("Consts", []),
-                "skill_icons": [metadata["Skills"].get(str(skill_id)) for skill_id in skill_order if str(skill_id) in metadata.get("Skills", {})],
+                "cons_count": len(talent_ids),
+                "cons_icons": metadata.get("Consts", []) or [],
+                "skill_icons": [metadata.get("Skills", {}).get(str(skill_id)) for skill_id in skill_order],
             }
         return None
 

@@ -1,8 +1,58 @@
 import asyncio
 import aiohttp
 import json
+import os
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageOps, ImageFilter, ImageFont
+
+# --- HOYOLAB / ENKA SUPPORT ---
+def get_hoyolab_headers():
+    cookie = os.getenv("HOYOLAB_COOKIE")
+    if not cookie:
+        ltuid = os.getenv("ITUID") or os.getenv("ltuid")
+        ltoken = os.getenv("ITOKEN_V2") or os.getenv("itoken_v2")
+        if ltuid and ltoken:
+            cookie = f"ltuid={ltuid}; ltoken={ltoken};"
+
+    if not cookie:
+        return None
+
+    return {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Referer": "https://webstatic.mihoyo.com/",
+        "Accept": "application/json, text/plain, */*",
+        "x-rpc-client_type": "5",
+        "x-rpc-app_version": "2.35.1",
+        "Cookie": cookie,
+    }
+
+
+def get_hoyolab_server():
+    return os.getenv("HOYOLAB_SERVER", "os_usa")
+
+
+async def get_hoyolab_avatar_data(uid):
+    headers = get_hoyolab_headers()
+    if not headers:
+        return None
+
+    server = get_hoyolab_server()
+    async with aiohttp.ClientSession(headers=headers) as session:
+        try:
+            char_url = (
+                f"https://api-os-takumi.mihoyo.com/game_record/app/genshin/api/character?server={server}&role_id={uid}"
+            )
+            async with session.get(char_url, timeout=10) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.json()
+                if data.get("retcode") != 0:
+                    return None
+                avatars = data.get("data", {}).get("avatars", []) or []
+                return {"avatarInfoList": avatars}
+        except Exception:
+            return None
+
 
 # --- DATA EXTRACTION ---
 def get_user_char_data(avatar_list, char_id, avatars_db):
@@ -61,9 +111,15 @@ async def fetch_build_assets(uid,char_id):
     with open('avatars.json', 'r') as f: 
         avatars_db = json.load(f)
 
+    # Try Hoyolab cookie-backed data first, then fall back to Enka
+    avatar_data = await get_hoyolab_avatar_data(uid)
+
     async with aiohttp.ClientSession() as session:
-        r1 = await session.get(f"https://enka.network/api/uid/{uid}")
-        d1 = await r1.json()
+        if avatar_data is None:
+            r1 = await session.get(f"https://enka.network/api/uid/{uid}")
+            d1 = await r1.json()
+        else:
+            d1 = avatar_data
 
         me_data = get_user_char_data(d1.get("avatarInfoList", []), char_id, avatars_db)
 

@@ -1,6 +1,7 @@
 import asyncio
 import aiohttp
 import json
+import os
 from io import BytesIO
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageOps,ImageFont, ImageChops, ImageEnhance
@@ -50,6 +51,10 @@ def draw_text_with_shadow(draw, text, position, font_path, font_size,
     draw.text(position, text, font=font, fill=text_color, anchor=anchor)
 
 async def get_enkadata(uid):
+    hoyo = await get_hoyolab_data(uid)
+    if hoyo and hoyo.get("avatarInfoList"):
+        return hoyo
+
     url = f"https://enka.network/api/uid/{uid}"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
@@ -57,14 +62,74 @@ async def get_enkadata(uid):
                 data = await response.json()
                 player_info = data.get("playerInfo", {})
                 return {
-                    "nickname" : player_info.get("nickname",""),
+                    "nickname": player_info.get("nickname", ""),
                     "avatarInfoList": data.get("avatarInfoList", []),
                     "showAvatarInfoList": player_info.get("showAvatarInfoList", [])
                 }
-            return {"nickname":"","showAvatarInfoList": []}
+            return {"nickname": "", "avatarInfoList": [], "showAvatarInfoList": []}
 
 def get_prop(stats_dict, prop_id):
     return stats_dict.get(str(prop_id), stats_dict.get(int(prop_id), 0))
+
+def get_hoyolab_headers():
+    cookie = os.getenv("HOYOLAB_COOKIE")
+    if not cookie:
+        ltuid = os.getenv("ITUID") or os.getenv("ltuid")
+        ltoken = os.getenv("ITOKEN_V2") or os.getenv("itoken_v2")
+        if ltuid and ltoken:
+            cookie = f"ltuid={ltuid}; ltoken={ltoken};"
+
+    if not cookie:
+        return None
+
+    return {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Referer": "https://webstatic.mihoyo.com/",
+        "Accept": "application/json, text/plain, */*",
+        "x-rpc-client_type": "5",
+        "x-rpc-app_version": "2.35.1",
+        "Cookie": cookie,
+    }
+
+def get_hoyolab_server():
+    return os.getenv("HOYOLAB_SERVER", "os_usa")
+
+async def get_hoyolab_data(uid):
+    headers = get_hoyolab_headers()
+    if not headers:
+        return None
+
+    server = get_hoyolab_server()
+    async with aiohttp.ClientSession(headers=headers) as session:
+        try:
+            card_url = (
+                f"https://api-os-takumi.mihoyo.com/game_record/app/card/wapi/getGameRecordCard?server={server}&uid={uid}"
+            )
+            async with session.get(card_url, timeout=10) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.json()
+                if data.get("retcode") != 0:
+                    return None
+                nickname = data.get("data", {}).get("userInfo", {}).get("nickname", "")
+        except Exception:
+            return None
+
+        try:
+            char_url = (
+                f"https://api-os-takumi.mihoyo.com/game_record/app/genshin/api/character?server={server}&role_id={uid}"
+            )
+            async with session.get(char_url, timeout=10) as resp:
+                if resp.status != 200:
+                    return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
+                data = await resp.json()
+                if data.get("retcode") != 0:
+                    return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
+                avatars = data.get("data", {}).get("avatars", []) or []
+                return {"nickname": nickname, "avatarInfoList": avatars, "showAvatarInfoList": []}
+        except Exception:
+            return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
+
 
 def extract_char_stats(avatar_list, char_id, element):
     element = element.capitalize() 

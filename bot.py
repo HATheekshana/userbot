@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import aiohttp
 import traceback
@@ -8,215 +8,179 @@ from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
 from dotenv import load_dotenv
 
-from character_card import compare_characters
-
-env_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=env_path)
-print(f"Loaded .env from: {env_path}")
-print("HOYOLAB_COOKIE set:", bool(os.getenv("HOYOLAB_COOKIE")))
-print("ITUID/ltuid set:", bool(os.getenv("ITUID") or os.getenv("ltuid")))
-print("ITOKEN_V2/itoken_v2 set:", bool(os.getenv("ITOKEN_V2") or os.getenv("itoken_v2")))
-
-API_ID = int(os.getenv("API_ID"))
-API_HASH = os.getenv("API_HASH")
-
-UID1 = os.getenv("UID1")
-UID2 = os.getenv("UID2")
-
-current_uid = UID1
-
-# -------------------------
-# LOAD CHARACTER DATA
-# -------------------------
-with open("char.json", "r", encoding="utf-8") as f:
-    CHAR_MAP = json.load(f)
-
-NAME_TO_ID = {}
-
-for char_id, info in CHAR_MAP.items():
-    if "-" in char_id:
-        continue
-
-    name = info["name"].lower()
-    NAME_TO_ID[name] = int(char_id)
-    NAME_TO_ID[name.replace(" ", "")] = int(char_id)
-
-# -------------------------
-# CLIENT
-# -------------------------
-app = Client(
-    "genshin_userbot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    parse_mode=ParseMode.HTML
-)
-
-# -------------------------
-# HELPERS
-# -------------------------
-def is_image_message(msg):
-    """
-    Accepts:
-    - photo
-    - document images (png/jpg/webp/jpeg)
-    """
-    if msg.photo:
-        return True
-
-    if msg.document:
-        mime = msg.document.mime_type or ""
-        return mime.startswith("image/")
-
-    return False
+from character_card import CharacterCardGenerator
 
 
-# -------------------------
-# COMMAND HANDLER
-# -------------------------
-@app.on_message(filters.me & filters.text)
-async def commands(client, message):
-    global current_uid
+class UserBot:
+    def __init__(self):
+        env_path = Path(__file__).resolve().parent / ".env"
+        load_dotenv(dotenv_path=env_path)
 
-    text = message.text.strip()
-    low = text.lower()
+        print(f"Loaded .env from: {env_path}")
+        print("HOYOLAB_COOKIE set:", bool(os.getenv("HOYOLAB_COOKIE")))
+        print("ITUID/ltuid set:", bool(os.getenv("ITUID") or os.getenv("ltuid")))
+        print("ITOKEN_V2/itoken_v2 set:", bool(os.getenv("ITOKEN_V2") or os.getenv("itoken_v2")))
 
-    # SWITCH UID
-    if low == "!switch":
-        current_uid = UID2 if current_uid == UID1 else UID1
-        await message.edit(f"✅ Switched UID\n{current_uid}")
-        return
+        self.api_id = int(os.getenv("API_ID"))
+        self.api_hash = os.getenv("API_HASH")
+        self.uid1 = os.getenv("UID1")
+        self.uid2 = os.getenv("UID2")
+        self.current_uid = self.uid1
 
-    # SHOW UID
-    if low == "!uid":
-        await message.edit(f"Current UID:\n{current_uid}")
-        return
+        self.client = Client(
+            "genshin_userbot",
+            api_id=self.api_id,
+            api_hash=self.api_hash,
+            parse_mode=ParseMode.HTML,
+        )
 
-    # -------------------------
-    # ADD SPLASH (PHOTO + FILE SUPPORT)
-    # -------------------------
-    if low.startswith("!add_splash"):
+        self.card_generator = CharacterCardGenerator()
+        self.char_map = self._load_character_map()
+        self.name_to_id = self._build_name_to_id_map()
+        self._register_handlers()
+
+    def _load_character_map(self):
+        with open("char.json", "r", encoding="utf-8") as handle:
+            return json.load(handle)
+
+    def _build_name_to_id_map(self):
+        mapping = {}
+        for char_id, info in self.char_map.items():
+            if "-" in char_id:
+                continue
+            normalized_name = info["name"].lower()
+            mapping[normalized_name] = int(char_id)
+            mapping[normalized_name.replace(" ", "")] = int(char_id)
+        return mapping
+
+    def _resolve_character_id(self, query):
+        query = query.lower()
+        char_id = self.name_to_id.get(query)
+        if char_id:
+            return char_id
+        for name, resolved_id in self.name_to_id.items():
+            if query in name:
+                return resolved_id
+        return None
+
+    def _is_image_message(self, message):
+        if message.photo:
+            return True
+        if message.document:
+            mime = message.document.mime_type or ""
+            return mime.startswith("image/")
+        return False
+
+    def _register_handlers(self):
+        @self.client.on_message(filters.me & filters.text)
+        async def commands(_, message):
+            await self.handle_message(message)
+
+    async def _fetch_ranking(self, uid, char_id):
+        url = f"https://test-xehj.onrender.com/get/ranking/{uid}"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=5) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        ranking = data.get(str(char_id))
+                        if ranking:
+                            return (
+                                f"\n\nʚଓ Global Rank: {ranking['ranking']}/{ranking['outOf']}"
+                                f"\nʚଓ Top: {ranking['percent']}%"
+                            )
+        except Exception as error:
+            print("Ranking error:", error)
+        return ""
+
+    async def handle_message(self, message):
+        text = message.text.strip()
+        low_text = text.lower()
+
+        if low_text == "!switch":
+            self.current_uid = self.uid2 if self.current_uid == self.uid1 else self.uid1
+            await message.edit(f"✅ Switched UID\n{self.current_uid}")
+            return
+
+        if low_text == "!uid":
+            await message.edit(f"Current UID:\n{self.current_uid}")
+            return
+
+        if low_text.startswith("!add_splash"):
+            parts = text.split(maxsplit=1)
+            if len(parts) < 2:
+                await message.edit("Usage:\nReply to image/file + !add_splash Chasca")
+                return
+            if not message.reply_to_message or not self._is_image_message(message.reply_to_message):
+                await message.edit("❌ Reply to an IMAGE or FILE (png/jpg/webp)")
+                return
+            query = parts[1].strip()
+            char_id = self._resolve_character_id(query)
+            if not char_id:
+                await message.edit("❌ Character not found")
+                return
+
+            os.makedirs("custom_splash", exist_ok=True)
+            for current_file in os.listdir("custom_splash"):
+                if current_file.startswith(str(char_id)):
+                    os.remove(os.path.join("custom_splash", current_file))
+
+            file_path = await self.client.download_media(
+                message.reply_to_message,
+                file_name="custom_splash/temp",
+            )
+            extension = os.path.splitext(file_path)[1] or ".jpg"
+            final_path = f"custom_splash/{char_id}{extension}"
+            os.replace(file_path, final_path)
+            await message.edit(
+                f"✅ Splash saved for:\n<b>{self.char_map[str(char_id)]['name']}</b>"
+            )
+            return
+
+        if not low_text.startswith("!show"):
+            return
+
         parts = text.split(maxsplit=1)
-
         if len(parts) < 2:
-            await message.edit("Usage:\nReply to image/file + !add_splash Chasca")
+            await message.edit("Usage:\n!show Furina")
             return
 
-        if not message.reply_to_message or not is_image_message(message.reply_to_message):
-            await message.edit("❌ Reply to an IMAGE or FILE (png/jpg/webp)")
-            return
-
-        query = parts[1].strip().lower()
-
-        char_id = NAME_TO_ID.get(query)
-
-        if not char_id:
-            for name, cid in NAME_TO_ID.items():
-                if query in name:
-                    char_id = cid
-                    break
-
+        query = parts[1].strip()
+        char_id = self._resolve_character_id(query)
         if not char_id:
             await message.edit("❌ Character not found")
             return
 
-        os.makedirs("custom_splash", exist_ok=True)
-
-        # remove old splash
-        for f in os.listdir("custom_splash"):
-            if f.startswith(str(char_id)):
-                os.remove(os.path.join("custom_splash", f))
-
-        # download file (photo OR document)
-        file_path = await client.download_media(
-            message.reply_to_message,
-            file_name="custom_splash/temp"
-        )
-
-        ext = os.path.splitext(file_path)[1]
-        if not ext:
-            ext = ".jpg"
-
-        final_path = f"custom_splash/{char_id}{ext}"
-        os.replace(file_path, final_path)
-
-        await message.edit(
-            f"✅ Splash saved for:\n<b>{CHAR_MAP[str(char_id)]['name']}</b>"
-        )
-        return
-
-    # -------------------------
-    # SHOW CHARACTER
-    # -------------------------
-    if not low.startswith("!show"):
-        return
-
-    parts = text.split(maxsplit=1)
-
-    if len(parts) < 2:
-        await message.edit("Usage:\n!show Furina")
-        return
-
-    query = parts[1].strip().lower()
-
-    char_id = NAME_TO_ID.get(query)
-
-    if not char_id:
-        for name, cid in NAME_TO_ID.items():
-            if query in name:
-                char_id = cid
-                break
-
-    if not char_id:
-        await message.edit("❌ Character not found")
-        return
-
-    await message.edit("🎴 Generating card...")
-
-    try:
-        image_buffer = await compare_characters(current_uid, char_id)
-
-        if not image_buffer:
-            print(f"Card generation returned no image for uid={current_uid}, char_id={char_id}")
-            await message.edit("❌ Card generation failed. Check service logs for details.")
-            return
-
-        ranking_text = ""
+        await message.edit("🎴 Generating card...")
 
         try:
-            url = f"https://test-xehj.onrender.com/get/ranking/{current_uid}"
+            image_buffer = await self.card_generator.generate_card(self.current_uid, char_id)
+            if not image_buffer:
+                print(f"Card generation returned no image for uid={self.current_uid}, char_id={char_id}")
+                await message.edit("❌ Card generation failed. Check service logs for details.")
+                return
 
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=5) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
+            ranking_text = await self._fetch_ranking(self.current_uid, char_id)
+            name = self.char_map[str(char_id)]["name"]
 
-                        c = data.get(str(char_id))
-                        if c:
-                            ranking_text = (
-                                f"\n\nʚଓ Global Rank: {c['ranking']}/{c['outOf']}"
-                                f"\nʚଓ Top: {c['percent']}%"
-                            )
+            await self.client.send_photo(
+                message.chat.id,
+                photo=image_buffer,
+                caption=f"<b>{name}</b>{ranking_text}",
+            )
+            await message.delete()
 
-        except Exception as e:
-            print("Ranking error:", e)
+        except Exception as error:
+            error_text = str(error) or "Unknown error"
+            print(f"Exception generating card for uid={self.current_uid}, char_id={char_id}: {error_text}")
+            traceback.print_exc()
+            await message.edit(f"❌ Error generating card: {error_text}")
 
-        name = CHAR_MAP[str(char_id)]["name"]
-
-        await client.send_photo(
-            message.chat.id,
-            photo=image_buffer,
-            caption=f"<b>{name}</b>{ranking_text}"
-        )
-
-        await message.delete()
-
-    except Exception as e:
-        print(f"Exception generating card for uid={current_uid}, char_id={char_id}: {e}")
-        traceback.print_exc()
-        await message.edit("❌ Error generating card. Check service logs for details.")
+    def run(self):
+        print("Userbot started...")
+        print(f"Default UID: {self.uid1}")
+        self.client.run()
 
 
-print("Userbot started...")
-print(f"Default UID: {UID1}")
-
-app.run()
+if __name__ == "__main__":
+    UserBot().run()

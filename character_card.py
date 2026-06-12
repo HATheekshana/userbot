@@ -110,44 +110,64 @@ async def get_hoyolab_data(uid):
         return None
 
     server = get_hoyolab_server()
+    hosts = [
+        "https://api-os-takumi.mihoyo.com",
+        "https://api-takumi.mihoyo.com"
+    ]
+    nickname = ""
+
     async with aiohttp.ClientSession(headers=headers) as session:
-        try:
-            card_url = (
-                f"https://api-os-takumi.mihoyo.com/game_record/app/card/wapi/getGameRecordCard?server={server}&uid={uid}"
-            )
-            async with session.get(card_url, timeout=10) as resp:
-                print(f"get_hoyolab_data: card_url status={resp.status} for uid={uid}")
-                if resp.status != 200:
-                    return None
-                data = await resp.json()
-                if data.get("retcode") != 0:
-                    print(f"get_hoyolab_data: card_url retcode={data.get('retcode')} for uid={uid}")
-                    return None
-                nickname = data.get("data", {}).get("userInfo", {}).get("nickname", "")
-        except Exception as e:
-            print(f"get_hoyolab_data: card_url exception for uid={uid}: {e}")
-            traceback.print_exc()
+        for host in hosts:
+            try:
+                card_url = (
+                    f"{host}/game_record/app/card/wapi/getGameRecordCard?server={server}&uid={uid}"
+                )
+                async with session.get(card_url, timeout=10) as resp:
+                    print(f"get_hoyolab_data: card_url try host={host}, status={resp.status} for uid={uid}")
+                    if resp.status == 404:
+                        continue
+                    if resp.status != 200:
+                        return None
+                    data = await resp.json()
+                    if data.get("retcode") != 0:
+                        print(f"get_hoyolab_data: card_url retcode={data.get('retcode')} for uid={uid} host={host}")
+                        return None
+                    nickname = data.get("data", {}).get("userInfo", {}).get("nickname", "")
+                    break
+            except Exception as e:
+                print(f"get_hoyolab_data: card_url exception for uid={uid} host={host}: {e}")
+                traceback.print_exc()
+                return None
+
+        if not nickname:
+            print(f"get_hoyolab_data: card_url failed on all hosts for uid={uid}")
             return None
 
-        try:
-            char_url = (
-                f"https://api-os-takumi.mihoyo.com/game_record/app/genshin/api/character?server={server}&role_id={uid}"
-            )
-            async with session.get(char_url, timeout=10) as resp:
-                print(f"get_hoyolab_data: char_url status={resp.status} for uid={uid}")
-                if resp.status != 200:
-                    return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
-                data = await resp.json()
-                if data.get("retcode") != 0:
-                    print(f"get_hoyolab_data: char_url retcode={data.get('retcode')} for uid={uid}")
-                    return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
-                avatars = data.get("data", {}).get("avatars", []) or []
-                print(f"get_hoyolab_data: loaded {len(avatars)} avatars for uid={uid}")
-                return {"nickname": nickname, "avatarInfoList": avatars, "showAvatarInfoList": []}
-        except Exception as e:
-            print(f"get_hoyolab_data: char_url exception for uid={uid}: {e}")
-            traceback.print_exc()
-            return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
+        for host in hosts:
+            try:
+                char_url = (
+                    f"{host}/game_record/app/genshin/api/character?server={server}&role_id={uid}"
+                )
+                async with session.get(char_url, timeout=10) as resp:
+                    print(f"get_hoyolab_data: char_url try host={host}, status={resp.status} for uid={uid}")
+                    if resp.status == 404:
+                        continue
+                    if resp.status != 200:
+                        return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
+                    data = await resp.json()
+                    if data.get("retcode") != 0:
+                        print(f"get_hoyolab_data: char_url retcode={data.get('retcode')} for uid={uid} host={host}")
+                        return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
+                    avatars = data.get("data", {}).get("avatars", []) or []
+                    print(f"get_hoyolab_data: loaded {len(avatars)} avatars for uid={uid} host={host}")
+                    return {"nickname": nickname, "avatarInfoList": avatars, "showAvatarInfoList": []}
+            except Exception as e:
+                print(f"get_hoyolab_data: char_url exception for uid={uid} host={host}: {e}")
+                traceback.print_exc()
+                return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
+
+    print(f"get_hoyolab_data: char_url failed on all hosts for uid={uid}")
+    return {"nickname": nickname, "avatarInfoList": [], "showAvatarInfoList": []}
 
 
 def extract_char_stats(avatar_list, char_id, element):

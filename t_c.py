@@ -13,12 +13,17 @@ class HoyolabClient:
         "https://api-takumi.mihoyo.com",
     ]
     DEFAULT_SERVER = "os_usa"
+    AVAILABLE_SERVERS = ["os_usa", "os_asia", "os_euro"]
 
     def __init__(self):
         self.cookie = self._build_cookie()
         self.device_id = os.getenv("HOYOLAB_DEVICE_ID") or os.getenv("DEVICE_ID") or "00000000-0000-0000-0000-000000000000"
         self.app_version = os.getenv("HOYOLAB_APP_VERSION", "2.35.1")
-        self.server = os.getenv("HOYOLAB_SERVER", self.DEFAULT_SERVER)
+        configured = os.getenv("HOYOLAB_SERVER")
+        if configured:
+            self.server_values = [configured] + [s for s in self.AVAILABLE_SERVERS if s != configured]
+        else:
+            self.server_values = self.AVAILABLE_SERVERS.copy()
 
     def _build_cookie(self):
         cookie = os.getenv("HOYOLAB_COOKIE")
@@ -58,61 +63,67 @@ class HoyolabClient:
         nickname = ""
         async with aiohttp.ClientSession(headers=headers) as session:
             for host in self.HOSTS:
-                card_url = f"{host}/game_record/app/card/wapi/getGameRecordCard?server={self.server}&uid={uid}"
-                try:
-                    async with session.get(card_url, timeout=10) as response:
-                        print(f"HoyolabClient: card_url host={host}, status={response.status} uid={uid}")
-                        if response.status == 404:
-                            continue
-                        if response.status != 200:
-                            text = await response.text()
-                            print(f"HoyolabClient: card_url unexpected status {response.status} body={text[:300]!r} host={host}")
-                            continue
+                for server in self.server_values:
+                    card_url = f"{host}/game_record/app/card/wapi/getGameRecordCard?server={server}&uid={uid}"
+                    try:
+                        async with session.get(card_url, timeout=10) as response:
+                            print(f"HoyolabClient: card_url host={host}, server={server}, status={response.status} uid={uid}")
+                            if response.status == 404:
+                                continue
+                            if response.status != 200:
+                                text = await response.text()
+                                print(f"HoyolabClient: card_url unexpected status {response.status} body={text[:300]!r} host={host} server={server}")
+                                continue
 
-                        data = await response.json()
-                        if data.get("retcode") != 0:
-                            print(f"HoyolabClient: card_url retcode={data.get('retcode')} host={host} uid={uid}")
-                            continue
+                            data = await response.json()
+                            if data.get("retcode") != 0:
+                                print(f"HoyolabClient: card_url retcode={data.get('retcode')} host={host} server={server} uid={uid}")
+                                continue
 
-                        nickname = data.get("data", {}).get("userInfo", {}).get("nickname", "")
-                        break
-                except Exception as error:
-                    print(f"HoyolabClient: card_url exception host={host} uid={uid}: {error}")
-                    traceback.print_exc()
-                    continue
+                            nickname = data.get("data", {}).get("userInfo", {}).get("nickname", "")
+                            break
+                    except Exception as error:
+                        print(f"HoyolabClient: card_url exception host={host} server={server} uid={uid}: {error}")
+                        traceback.print_exc()
+                        continue
+                if nickname:
+                    break
 
             if not nickname:
-                print(f"HoyolabClient: failed to load nickname for uid={uid}")
-                return None
+                print(f"HoyolabClient: failed to load nickname for uid={uid}, continuing to fetch character data")
 
             for host in self.HOSTS:
-                char_url = f"{host}/game_record/app/genshin/api/character?server={self.server}&role_id={uid}"
-                try:
-                    async with session.get(char_url, timeout=10) as response:
-                        print(f"HoyolabClient: character_url host={host}, status={response.status} uid={uid}")
-                        if response.status == 404:
-                            continue
-                        if response.status != 200:
-                            text = await response.text()
-                            print(f"HoyolabClient: character_url unexpected status {response.status} body={text[:300]!r} host={host}")
-                            continue
+                for server in self.server_values:
+                    char_url = f"{host}/game_record/app/genshin/api/character?server={server}&role_id={uid}"
+                    try:
+                        async with session.get(char_url, timeout=10) as response:
+                            print(f"HoyolabClient: character_url host={host}, server={server}, status={response.status} uid={uid}")
+                            if response.status == 404:
+                                continue
+                            if response.status != 200:
+                                text = await response.text()
+                                print(f"HoyolabClient: character_url unexpected status {response.status} body={text[:300]!r} host={host} server={server}")
+                                continue
 
-                        data = await response.json()
-                        if data.get("retcode") != 0:
-                            print(f"HoyolabClient: character_url retcode={data.get('retcode')} host={host} uid={uid}")
-                            continue
+                            data = await response.json()
+                            if data.get("retcode") != 0:
+                                print(f"HoyolabClient: character_url retcode={data.get('retcode')} host={host} server={server} uid={uid}")
+                                continue
 
-                        avatars = data.get("data", {}).get("avatars", []) or []
-                        print(f"HoyolabClient: loaded {len(avatars)} avatars for uid={uid} host={host}")
-                        return {
-                            "nickname": nickname,
-                            "avatarInfoList": avatars,
-                            "showAvatarInfoList": [],
-                        }
-                except Exception as error:
-                    print(f"HoyolabClient: character_url exception host={host} uid={uid}: {error}")
-                    traceback.print_exc()
-                    continue
+                            avatars = data.get("data", {}).get("avatars", []) or []
+                            print(f"HoyolabClient: loaded {len(avatars)} avatars for uid={uid} host={host} server={server}")
+                            return {
+                                "nickname": nickname,
+                                "avatarInfoList": avatars,
+                                "showAvatarInfoList": [],
+                            }
+                    except Exception as error:
+                        print(f"HoyolabClient: character_url exception host={host} server={server} uid={uid}: {error}")
+                        traceback.print_exc()
+                        continue
+
+        print(f"HoyolabClient: failed on all hosts for uid={uid}")
+        return None
 
         print(f"HoyolabClient: failed on all hosts for uid={uid}")
         return None

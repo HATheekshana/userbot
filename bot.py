@@ -1,6 +1,7 @@
 import json
 import os
 import aiohttp
+import traceback
 
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
@@ -169,7 +170,8 @@ async def commands(client, message):
         image_buffer = await compare_characters(current_uid, char_id)
 
         if not image_buffer:
-            await message.edit("❌ Card generation failed")
+            print(f"Card generation returned no image for uid={current_uid}, char_id={char_id}")
+            await message.edit("❌ Card generation failed. Check service logs for details.")
             return
 
         ranking_text = ""
@@ -203,7 +205,9 @@ async def commands(client, message):
         await message.delete()
 
     except Exception as e:
-        await message.edit(f"❌ Error:\n{e}")
+        print(f"Exception generating card for uid={current_uid}, char_id={char_id}: {e}")
+        traceback.print_exc()
+        await message.edit("❌ Error generating card. Check service logs for details.")
 
 
 print("Userbot started...")

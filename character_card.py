@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import json
 import os
+import traceback
 from io import BytesIO
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageOps,ImageFont, ImageChops, ImageEnhance
@@ -219,7 +220,8 @@ async def compare_characters(uid, char_id):
         me = await get_enkadata(uid)
         me_data, t_icons, c_icons = await fetch_build_assets(uid, char_id)
     except Exception as e:
-        print(f"Error fetching data: {e}")
+        print(f"Error fetching data for uid={uid}, char_id={char_id}: {e}")
+        traceback.print_exc()
         return None
 
     char_id_str = str(char_id)

@@ -224,6 +224,10 @@ async def compare_characters(uid, char_id):
         traceback.print_exc()
         return None
 
+    if not me_data:
+        print(f"No build/assets data found for uid={uid}, char_id={char_id}")
+        return None
+
     char_id_str = str(char_id)
     char_info_map = CHAR_MAP.get(char_id_str, {"element": "Anemo", "avataricon": "UI_AvatarIcon_Qin"})
     initial_element = char_info_map.get('element', 'Anemo')

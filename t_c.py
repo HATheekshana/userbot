@@ -124,7 +124,7 @@ async def fetch_build_assets(uid,char_id):
         me_data = get_user_char_data(d1.get("avatarInfoList", []), char_id, avatars_db)
 
         if not me_data:
-            return None, None
+            return None, None, None
 
         # Fetch icons for both (showing me_data icons as the reference)
         t_icons = await asyncio.gather(*[fetch_ui_image(session, u) for u in me_data['skill_icons']])

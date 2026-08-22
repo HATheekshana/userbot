@@ -1,7 +1,9 @@
 import asyncio
-import aiohttp
+import logging
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
+
+logger = logging.getLogger("genshin_userbot")
 
 # Stat Mapping for icons (Local files)
 STAT_MAP = {
@@ -19,31 +21,60 @@ STAT_MAP = {
 # Flower, Feather, Sands, Goblet, Circlet
 EQUIP_ORDER = ["EQUIP_BRACER", "EQUIP_NECKLACE", "EQUIP_SHOES", "EQUIP_RING", "EQUIP_DRESS"]
 
+
+def _compute_cv(main_data, sub_stats):
+    """CV (crit value) = CR% * 2 + CD%, summed across the main stat (only
+    relevant for circlets, whose main stat can itself be CR or CD) and all
+    substats. Both crit stats stack additively across an artifact, so this
+    is just a running total, not an average."""
+    cr = 0.0
+    cd = 0.0
+
+    main_prop = main_data.get("mainPropId")
+    if main_prop == "FIGHT_PROP_CRITICAL":
+        cr += main_data.get("statValue", 0) or 0
+    elif main_prop == "FIGHT_PROP_CRITICAL_HURT":
+        cd += main_data.get("statValue", 0) or 0
+
+    for stat in sub_stats:
+        prop_id = stat.get("appendPropId")
+        if prop_id == "FIGHT_PROP_CRITICAL":
+            cr += stat.get("statValue", 0) or 0
+        elif prop_id == "FIGHT_PROP_CRITICAL_HURT":
+            cd += stat.get("statValue", 0) or 0
+
+    return cr * 2 + cd
+
+
 async def draw_artifact_card(session, base_image, x, y, art_data, font):
     draw = ImageDraw.Draw(base_image)
     CARD_W, CARD_H = 330, 200 
-    ICONS_PATH = "asstests/icons/"
-    STARS_PATH = "asstests/icons/stars/" 
+    ICONS_PATH = "assets/icons/"
+    STARS_PATH = "assets/icons/stars/" 
     
     # 1. Background Card - Using a slightly more transparent fill for that glassmorphism look
     draw.rounded_rectangle([x, y, x + CARD_W, y + CARD_H], radius=12, fill=(0, 0, 0, 80), outline=(255, 255, 255, 40))
 
     flat = art_data.get("flat", {})
     relic_core = art_data.get("reliquary", {})
+    main_data = flat.get("reliquaryMainstat", {})
+    sub_stats = flat.get("reliquarySubstats", [])
 
     # 2. Artifact Piece Icon (The Gear piece)
     icon_name = flat.get("icon")
-    if icon_name:
-        url = f"https://enka.network/ui/{icon_name}.png"
+    # Live HoYoLAB data (character/detail fallback) gives a full,
+    # directly-fetchable CDN URL - it's hash-named, so it can't be
+    # reconstructed as an enka.network/ui/... path the way Enka's own
+    # semantic icon names can.
+    icon_url = flat.get("icon_url") or (f"https://enka.network/ui/{icon_name}.png" if icon_name else None)
+    if icon_url:
+        url = icon_url
         async with session.get(url) as response:
             if response.status == 200:
                 img_data = await response.read()
                 art_img = Image.open(BytesIO(img_data)).convert("RGBA").resize((140, 140), Image.Resampling.LANCZOS)
                 # Icon background
                 base_image.paste(art_img, (x + 15, y + 30), art_img)
-    raw_level = relic_core.get("level", 1)
-    display_level = f"+{raw_level - 1}"
-    draw.text((x + 140, y + 25), display_level, font=font, fill=(255, 204, 0), stroke_width=1, stroke_fill=(0,0,0),anchor="rm")
 
     # 4. Rarity Stars (NEW)
     rarity = flat.get("rankLevel", 5)
@@ -57,9 +88,8 @@ async def draw_artifact_card(session, base_image, x, y, art_data, font):
         # 3. Paste
         base_image.paste(star_img, (x + 30, y + 140), star_img)
     except Exception as e:
-        print(f"Error loading star image Star{rarity}.png: {e}")
+        logger.warning("Error loading star image Star%s.png: %s", rarity, e)
     # 3. Main Stat Icon - PASTE THIS LAST so it's on top
-    main_data = flat.get("reliquaryMainstat", {})
     main_prop = main_data.get("mainPropId")
     if main_prop:
         icon_key = STAT_MAP.get(main_prop, "atk").lower()
@@ -67,16 +97,10 @@ async def draw_artifact_card(session, base_image, x, y, art_data, font):
             # We move the main stat icon to the top right of the gear box
             m_icon = Image.open(f"{ICONS_PATH}{icon_key}.png").convert("RGBA").resize((28, 28))
             base_image.paste(m_icon, (x + 10, y + 10), m_icon)
-        except: pass
-
-        # Main Stat Value
-        main_val = main_data.get("statValue")
-        is_percent = any(k in main_prop for k in ["PERCENT", "CRITICAL", "EFFICIENCY", "HURT"])
-        main_val_str = f"{main_val}%" if is_percent else f"{int(main_val)}"
-        draw.text((x + 80, y + 180), main_val_str, font=font, fill=(255, 255, 255), anchor="mm", stroke_width=1, stroke_fill=(0,0,0))
+        except Exception:
+            pass
 
     # 4. Sub-Stat Grid
-    sub_stats = flat.get("reliquarySubstats", [])
     grid_x = x + 150
     for i, stat in enumerate(sub_stats[:4]):
         col, row = i % 1, i // 1
@@ -91,12 +115,31 @@ async def draw_artifact_card(session, base_image, x, y, art_data, font):
         try:
             s_icon = Image.open(f"{ICONS_PATH}{icon_file}.png").convert("RGBA").resize((22, 22))
             base_image.paste(s_icon, (bx + 8, by + 8), s_icon)
-        except: pass
+        except Exception:
+            pass
         
         val = stat.get("statValue")
         is_percent = any(k in prop_id for k in ["PERCENT", "CRITICAL", "EFFICIENCY", "HURT"])
         val_str = f"+{val}%" if is_percent else f"+{val}"
         draw.text((bx + 55, by + 19), val_str, font=font, fill=(255, 255, 255), anchor="lm")
+
+    # 5. Main Stat Value - bottom left of the card (where the level used to sit).
+    if main_prop:
+        main_val = main_data.get("statValue")
+        is_percent = any(k in main_prop for k in ["PERCENT", "CRITICAL", "EFFICIENCY", "HURT"])
+        main_val_str = f"{main_val}%" if is_percent else f"{int(main_val)}"
+        draw.text((x + 5, y + CARD_H - 15), main_val_str, font=font, fill=(255, 255, 255), anchor="lm", stroke_width=1, stroke_fill=(0, 0, 0))
+
+    # 6. Enhancement level - bottom right of the card.
+    raw_level = relic_core.get("level", 1)
+    display_level = f"+{raw_level - 1}"
+    draw.text((x + CARD_W - 185, y + CARD_H - 15), display_level, font=font, fill=(255, 204, 0), stroke_width=1, stroke_fill=(0, 0, 0), anchor="rm")
+
+    # 7. CV (crit value) score - top right of the card. Drawn last, on top
+    # of everything else (icon/stars/grid), so it's never painted over.
+    cv_score = _compute_cv(main_data, sub_stats)
+    cv_text = f"CV{cv_score:.1f}"
+    draw.text((x + CARD_W - 185, y + 25), cv_text, font=font, fill=(255, 255, 255), stroke_width=1, stroke_fill=(0, 0, 0), anchor="rm")
 
 async def draw_horizontal_artifacts(session, background, char_data, start_x, start_y, font):
     """

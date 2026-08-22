@@ -1,0 +1,21 @@
+# Secrets - never commit your real .env
+.env
+
+# User-uploaded splash art (runtime-generated, personal to each deployment)
+data/custom_splash/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Pyrogram session files (only relevant if not using SESSION_STRING)
+*.session
+*.session-journal
+
+# OS/editor cruft
+.DS_Store
+.vscode/
+.idea/

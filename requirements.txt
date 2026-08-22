@@ -1,0 +1,13 @@
+pyrogram==2.0.106
+tgcrypto==1.2.5
+aiohttp>=3.12,<4
+aiodns==3.2.0
+pycares<4.4.0
+python-dotenv==1.0.1
+Pillow==10.4.0
+cloudscraper==1.2.71
+# Current genshin.py supports HoYoLAB's ltoken_v2 / ltuid_v2 cookies and
+# Pydantic v2 (which is what current hosts install). This release includes
+# newer character metadata required by current Spiral Abyss responses.
+genshin==1.7.27
+pydantic>=2,<3

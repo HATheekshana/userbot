@@ -3,6 +3,7 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
 
+from cards.watermark import apply_watermark
 from services.net import new_session
 
 logger = logging.getLogger("genshin_userbot")
@@ -543,6 +544,7 @@ class TheaterCardBuilder:
                 y
             )
 
+        apply_watermark(canvas)
         buffer = BytesIO()
         canvas.convert("RGB").save(buffer, format="JPEG", quality=95)
         buffer.seek(0)

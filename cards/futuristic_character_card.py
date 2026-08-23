@@ -21,6 +21,7 @@ from PIL import Image, ImageDraw, ImageOps, ImageFont
 from cards.character_card import CharacterCardGenerator, W_STAT_ICONS
 from cards.artifacts_futuristic import draw_horizontal_artifacts_futuristic
 from cards.talents_futuristic import draw_build_column_futuristic
+from cards.watermark import apply_watermark
 from services.net import new_session
 from cards.futuristic_theme import (
     ACCENT, TEXT_MAIN, TEXT_DIM, GOLD,
@@ -260,6 +261,7 @@ class FuturisticCharacterCardGenerator(CharacterCardGenerator):
             draw_build_column_futuristic(build_layer, 640, build_data, talent_icons, constellation_icons, font_hex, accent=accent)
             final_image = Image.alpha_composite(final_image, build_layer)
             final_image = Image.alpha_composite(final_image, scanlines(target_size, spacing=4, alpha=10))
+            apply_watermark(final_image)
 
             buffer = BytesIO()
             final_image.convert("RGB").save(buffer, format="JPEG", quality=95)

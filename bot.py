@@ -114,22 +114,76 @@ class UserBot:
         with open("data/char.json", "r", encoding="utf-8") as handle:
             return json.load(handle)
 
+    def _resolve_character_name(self, info):
+        """Best-effort display name for a char.json entry.
+
+        char.json is a raw EnkaNetwork `characters.json` snapshot (see
+        data/update_data.py) - it does NOT ship a "name" field directly,
+        only a NameTextMapHash that has to be resolved against a text map.
+        Older copies of this project may have had a char.json with names
+        baked in, so we still check "name" first for backward compatibility,
+        then fall back through progressively less reliable sources instead
+        of crashing on KeyError:
+
+          1. info["name"]                          - if present
+          2. data/new.json[str(NameTextMapHash)]    - proper localized name
+          3. info["SideIconName"] with the
+             "UI_AvatarIcon_Side_" prefix stripped  - internal codename
+             (e.g. "Qin" for Jean, "Tohma" for Thoma) - not always what
+             players type, but stable and non-crashing.
+
+        Returns None if nothing usable is found, so the caller can skip
+        the entry instead of poisoning the map with a bad key.
+        """
+        name = info.get("name")
+        if name:
+            return name
+
+        text_map = self.card_generators["classic"].text_map
+        name_hash = str(info.get("NameTextMapHash", ""))
+        text_name = text_map.get(name_hash)
+        if text_name:
+            return text_name
+
+        side_icon = info.get("SideIconName") or ""
+        prefix = "UI_AvatarIcon_Side_"
+        if side_icon.startswith(prefix):
+            return side_icon[len(prefix):]
+
+        return None
+
     def _build_name_to_id_map(self):
         mapping = {}
+        skipped = []
         for char_id, info in self.char_map.items():
             if "-" in char_id:
                 continue
-            normalized_name = info["name"].lower()
+            name = self._resolve_character_name(info)
+            if not name:
+                skipped.append(char_id)
+                continue
+            normalized_name = name.lower()
             mapping[normalized_name] = int(char_id)
             mapping[normalized_name.replace(" ", "")] = int(char_id)
+        if skipped:
+            logger.warning(
+                "Skipped %d char.json entr%s with no resolvable name (char_id(s): %s). "
+                "Run data/update_data.py or refresh data/new.json to fix this.",
+                len(skipped),
+                "y" if len(skipped) == 1 else "ies",
+                ", ".join(skipped),
+            )
         return mapping
 
     def _build_myc_character_list(self):
-        entries = [
-            (int(char_id), info["name"])
-            for char_id, info in self.char_map.items()
-            if "-" not in char_id
-        ]
+        entries = []
+        for char_id, info in self.char_map.items():
+            if "-" in char_id:
+                continue
+            name = self._resolve_character_name(info)
+            if not name:
+                continue
+            entries.append((int(char_id), name))
         entries.sort(key=lambda entry: entry[1].lower())
         return entries
 

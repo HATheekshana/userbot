@@ -13,6 +13,7 @@ from cards.hoyolab_character_detail import (
     hoyolab_character_detail_to_avatar_record,
 )
 from cards.artifacts import draw_horizontal_artifacts
+from cards.watermark import apply_watermark
 from services.net import new_session
 
 logger = logging.getLogger("genshin_userbot")
@@ -149,7 +150,7 @@ class CharacterCardGenerator:
         """Shared HoYoLAB fetch used by both ID-based (_lookup_character_info)
         and name-based (resolve_by_name) live lookups, so there's exactly
         one place that knows how to call genshin.py / handle its errors."""
-        from abyss import _get_client  # local import: avoid a hard genshin.py/cookie dependency for callers that never hit this path
+        from services.abyss import _get_client  # local import: avoid a hard genshin.py/cookie dependency for callers that never hit this path
         client = _get_client()
         return await client.get_genshin_detailed_characters(int(uid))
 
@@ -548,6 +549,7 @@ class CharacterCardGenerator:
             await draw_horizontal_artifacts(session, ui_layer, avatar_record, 150, 650, ImageFont.truetype(self.font_path, 22))
             final_image = Image.alpha_composite(background_image, ui_layer)
             draw_build_column(final_image, 650, build_data, talent_icons, constellation_icons)
+            apply_watermark(final_image)
 
             buffer = BytesIO()
             final_image.convert("RGB").save(buffer, format="JPEG", quality=95)

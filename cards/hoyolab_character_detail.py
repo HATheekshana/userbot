@@ -100,7 +100,7 @@ async def fetch_hoyolab_character_detail(uid, char_id):
     talents/constellations.
     """
     try:
-        from abyss import _get_client  # local import: avoid a hard genshin.py/cookie dependency for callers that never hit this path
+        from services.abyss import _get_client  # local import: avoid a hard genshin.py/cookie dependency for callers that never hit this path
         client = _get_client()
     except Exception as error:
         logger.warning("fetch_hoyolab_character_detail: no HoYoLAB client available for uid=%s: %s", uid, error)

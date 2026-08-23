@@ -15,7 +15,6 @@ plug in their own credentials, and run their own copy without touching code.
 | Command | What it does |
 |---|---|
 | `!show <character>` | Generates a character card (stats, weapon, artifacts) |
-| `!myc` | Interactive button picker to browse all characters |
 | `!change` / `!change classic` / `!change futuristic` | Switch card art style |
 | `!add_splash <character>` (reply to an image) | Set a custom splash art for a character |
 | `!abyss` / `!abyss previous` | Spiral Abyss report |

@@ -369,7 +369,7 @@ class StygianCardBuilder:
             for index, stage in enumerate(stages):
                 y = self._draw_stage(canvas, draw, index, stage, y) + GAP
 
-        apply_watermark(canvas)
+        apply_watermark(canvas, position="bottom-right")
         buffer = BytesIO()
         canvas.convert("RGB").save(buffer, format="JPEG", quality=95)
         buffer.seek(0)

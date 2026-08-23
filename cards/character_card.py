@@ -549,7 +549,7 @@ class CharacterCardGenerator:
             await draw_horizontal_artifacts(session, ui_layer, avatar_record, 150, 650, ImageFont.truetype(self.font_path, 22))
             final_image = Image.alpha_composite(background_image, ui_layer)
             draw_build_column(final_image, 650, build_data, talent_icons, constellation_icons)
-            apply_watermark(final_image)
+            apply_watermark(final_image, position="top-right")
 
             buffer = BytesIO()
             final_image.convert("RGB").save(buffer, format="JPEG", quality=95)

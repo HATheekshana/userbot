@@ -261,7 +261,7 @@ class FuturisticCharacterCardGenerator(CharacterCardGenerator):
             draw_build_column_futuristic(build_layer, 640, build_data, talent_icons, constellation_icons, font_hex, accent=accent)
             final_image = Image.alpha_composite(final_image, build_layer)
             final_image = Image.alpha_composite(final_image, scanlines(target_size, spacing=4, alpha=10))
-            apply_watermark(final_image)
+            apply_watermark(final_image, position="top-left")
 
             buffer = BytesIO()
             final_image.convert("RGB").save(buffer, format="JPEG", quality=95)

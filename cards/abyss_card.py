@@ -410,7 +410,7 @@ class AbyssCardBuilder:
             for index, floor in enumerate(floors):
                 y = self._draw_floor(canvas, draw, floor, y, is_last=(index == len(floors) - 1)) + GAP
 
-        apply_watermark(canvas)
+        apply_watermark(canvas, position="bottom-right")
         buffer = BytesIO()
         canvas.convert("RGB").save(buffer, format="JPEG", quality=95)
         buffer.seek(0)

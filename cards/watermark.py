@@ -13,8 +13,8 @@ LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "logo.png"
 # Tunables
 WATERMARK_WIDTH_RATIO = 0.09   # logo width as a fraction of the card width
 WATERMARK_MARGIN_RATIO = 0.018  # margin from the edge as a fraction of card width
-WATERMARK_MIN_SIZE = 48
-WATERMARK_MAX_SIZE = 160
+WATERMARK_MIN_SIZE = 24
+WATERMARK_MAX_SIZE = 80
 WATERMARK_OPACITY = 0.55       # 0-1, keeps it subtle so it doesn't fight the artwork
 
 

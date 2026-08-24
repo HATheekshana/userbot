@@ -46,6 +46,16 @@ W_STAT_ICONS = {
     "FIGHT_PROP_DEFENSE_PERCENT": "assets/icons/def.png",
 }
 
+# Enka's character store uses the in-game element labels ("Fire", "Wind",
+# etc.), whereas the card assets and fight-prop lookup use the player-facing
+# labels ("Pyro", "Anemo", etc.).  Keep this conversion at the data boundary
+# so every renderer receives one consistent character record.
+ENKA_ELEMENT_NAMES = {
+    "Fire": "Pyro", "Water": "Hydro", "Wind": "Anemo",
+    "Electric": "Electro", "Ice": "Cryo", "Rock": "Geo",
+    "Grass": "Dendro",
+}
+
 # Character-name quirks between char.json's icon names and enka.network's
 # namecard icon names. Used by _get_namecard_urls() below.
 NAMECARD_NAME_OVERRIDES = {
@@ -146,6 +156,33 @@ class CharacterCardGenerator:
         with open(file_path, "r", encoding="utf-8") as handle:
             return json.load(handle)
 
+    def _normalise_character_info(self, info):
+        """Return a card-ready view of either supported character schema.
+
+        Fresh Enka `characters.json` records have `SideIconName` and
+        `NameTextMapHash`, not the legacy `avataricon` / `name` fields.  The
+        old code treated those records as incomplete and rendered every
+        character with the Zibai fallback icon, which also selected the wrong
+        namecard background.
+        """
+        info = dict(info or {})
+        side_icon = info.get("SideIconName") or ""
+        avatar_icon = info.get("avataricon") or side_icon.replace(
+            "UI_AvatarIcon_Side_", "UI_AvatarIcon_", 1
+        )
+        name = info.get("name") or self.text_map.get(str(info.get("NameTextMapHash", "")))
+        if not name and avatar_icon:
+            name = avatar_icon.replace("UI_AvatarIcon_", "")
+
+        element = info.get("element") or info.get("Element") or "Anemo"
+        element = ENKA_ELEMENT_NAMES.get(str(element).capitalize(), str(element).capitalize())
+        info.update({
+            "name": name or "Unknown Character",
+            "avataricon": avatar_icon or "UI_AvatarIcon_Qin",
+            "element": element,
+        })
+        return info
+
     async def _fetch_live_detailed_characters(self, uid):
         """Shared HoYoLAB fetch used by both ID-based (_lookup_character_info)
         and name-based (resolve_by_name) live lookups, so there's exactly
@@ -161,7 +198,10 @@ class CharacterCardGenerator:
             "name": match.name,
             "avataricon": icon_name,
             "rarity": match.rarity,
-            "element": (match.element or "Anemo").capitalize(),
+            "element": ENKA_ELEMENT_NAMES.get(
+                str(match.element or "Anemo").capitalize(),
+                str(match.element or "Anemo").capitalize(),
+            ),
         }
 
     async def resolve_by_name(self, name, uid):
@@ -215,7 +255,7 @@ class CharacterCardGenerator:
         """
         cached = self.char_map.get(str(char_id))
         if cached:
-            return cached
+            return self._normalise_character_info(cached)
 
         logger.info(
             "CharacterCardGenerator: char_id=%s not in char.json, trying live HoYoLAB lookup for uid=%s",
@@ -243,7 +283,7 @@ class CharacterCardGenerator:
         self.char_map[str(char_id)] = entry
         self._persist_char_map()
         logger.info("CharacterCardGenerator: learned char_id=%s (%s) from live HoYoLAB lookup, saved to char.json", char_id, entry["name"])
-        return entry
+        return self._normalise_character_info(entry)
 
     def _persist_char_map(self):
         """Write self.char_map back to char.json so a live-fetched
@@ -428,8 +468,8 @@ class CharacterCardGenerator:
         if not stats:
             raise RuntimeError(f"Character stats not found for char_id={char_id} in uid={uid}")
 
-        avatar_icon = character_info.get("avataricon", "UI_AvatarIcon_Zibai")
-        character_name = avatar_icon.replace("UI_AvatarIcon_", "")
+        avatar_icon = character_info["avataricon"]
+        character_name = character_info["name"]
         character_level = stats.get("char_level", 1)
         friendship_level = stats.get("friendship", 1)
         target_size = (1875, 890)

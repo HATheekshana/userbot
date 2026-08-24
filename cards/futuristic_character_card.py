@@ -108,8 +108,8 @@ class FuturisticCharacterCardGenerator(CharacterCardGenerator):
         if not stats:
             raise RuntimeError(f"Character stats not found for char_id={char_id} in uid={uid}")
 
-        avatar_icon = character_info.get("avataricon", "UI_AvatarIcon_Zibai")
-        character_name = avatar_icon.replace("UI_AvatarIcon_", "")
+        avatar_icon = character_info["avataricon"]
+        character_name = character_info["name"]
         character_level = stats.get("char_level", 1)
         friendship_level = stats.get("friendship", 1)
         target_size = CARD_SIZE

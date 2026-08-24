@@ -163,8 +163,13 @@ class UserBot:
                 skipped.append(char_id)
                 continue
             normalized_name = name.lower()
-            mapping[normalized_name] = int(char_id)
-            mapping[normalized_name.replace(" ", "")] = int(char_id)
+            # The source data can contain legacy/test duplicates whose
+            # SideIconName is wrong (for example id 10000901 looks like
+            # Xiangling internally but is labelled Mavuika).  The canonical
+            # entry appears first; never let a later fallback alias replace
+            # a working character ID with one HoYoLAB does not recognise.
+            mapping.setdefault(normalized_name, int(char_id))
+            mapping.setdefault(normalized_name.replace(" ", ""), int(char_id))
         if skipped:
             logger.warning(
                 "Skipped %d char.json entr%s with no resolvable name (char_id(s): %s). "
@@ -177,12 +182,17 @@ class UserBot:
 
     def _build_myc_character_list(self):
         entries = []
+        seen_names = set()
         for char_id, info in self.char_map.items():
             if "-" in char_id:
                 continue
             name = self._resolve_character_name(info)
             if not name:
                 continue
+            normalized_name = name.strip().lower()
+            if normalized_name in seen_names:
+                continue
+            seen_names.add(normalized_name)
             entries.append((int(char_id), name))
         entries.sort(key=lambda entry: entry[1].lower())
         return entries
@@ -506,7 +516,10 @@ class UserBot:
             raise RuntimeError("Card generation failed. Check service logs for details.")
 
         ranking_text = await self._fetch_ranking(self.current_uid, char_id)
-        name = self.char_map[str(char_id)]["name"]
+        # Raw Enka character records have NameTextMapHash rather than a
+        # literal `name`.  Reuse the same safe resolver as the menu so a
+        # successfully generated card is never discarded by KeyError.
+        name = self._resolve_character_name(self.char_map.get(str(char_id), {})) or str(char_id)
 
         await self.client.send_photo(
             chat_id,

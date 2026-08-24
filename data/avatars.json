@@ -3487,9 +3487,9 @@
       "10235": 2339
     },
     "NameTextMapHash": 3293134650,
-    "SideIconName": "/ui/UI_AvatarIcon_Side_Mavuika.png",
-    "QualityType": "QUALITY_ORANGE",
-    "WeaponType": "WEAPON_CLAYMORE"
+    "SideIconName": "/ui/UI_AvatarIcon_Side_Xiangling.png",
+    "QualityType": "QUALITY_PURPLE",
+    "WeaponType": "WEAPON_POLE"
   },
   "10000902": {
     "Element": "Fire",
